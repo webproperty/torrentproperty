@@ -2,9 +2,11 @@ const WebTorrent = require('webtorrent')
 const {WebProperty, verify} = require('webproperty/regular.js')
 const fs = require('fs')
 const path = require('path')
+const EventEmitter = require('events').EventEmitter
 
-class TorrentProperty {
+class TorrentProperty extends EventEmitter {
     constructor(opt){
+        super()
         if(!opt){
             opt.storage = __dirname + '/storage'
             opt.takeOutInActive = false
@@ -41,6 +43,7 @@ class TorrentProperty {
                     torrent.isActive = data.new.isActive
                     torrent.own = data.new.own
                     // console.log('the following torrent has been updated: ' + torrent.address)
+                    this.emit('updated', {torrent: {address: torrent.address, infoHash: torrent.infoHash}, data: data.new})
                 })
             })
         })
@@ -50,6 +53,8 @@ class TorrentProperty {
                     if(error){
                         console.log(error)
                         // this.redo.push(data.infoHash)
+                    } else {
+                        this.emit('deactivated', data)
                     }
                 })
             })
@@ -69,8 +74,8 @@ class TorrentProperty {
                         fs.rmSync(this.storage + path.sep + hasNot[i], {recursive: true, force: true})
                     } else {
                         await new Promise((resolve) => {
-                            this.webtorrent.seed(this.storage + path.sep + 'unmanaged' + hasNot[i], {path: this.storage + path.sep + has[i].address, destroyStoreOnDestroy: true}, torrent => {
-                                torrent.address = 'unmanaged' + hasNot[i]
+                            this.webtorrent.seed(this.storage + path.sep + '_' + hasNot[i], {path: this.storage + path.sep + has[i].address, destroyStoreOnDestroy: true}, torrent => {
+                                torrent.address = '_' + hasNot[i]
                                 torrent.unmanaged = true
                                 resolve(torrent)
                             })

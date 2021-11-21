@@ -2,9 +2,11 @@ const WebTorrent = require('webtorrent')
 const {WebProperty, verify} = require('webproperty/managed.js')
 const fs = require('fs')
 const path = require('path')
+const EventEmitter = require('events').EventEmitter
 
-class TorrentProperty {
+class TorrentProperty extends EventEmitter {
     constructor(opt){
+        super()
         if(!opt){
             opt.storage = __dirname + '/storage'
             opt.takeOutInActive = false
@@ -36,6 +38,7 @@ class TorrentProperty {
                     torrent.seq = data.new.seq
                     torrent.isActive = data.new.isActive
                     torrent.own = data.new.own
+                    this.emit('updated', {torrent: {address: torrent.address, infoHash: torrent.infoHash}, data: data.new})
                     // console.log('the following torrent has been updated: ' + torrent.address)
                 })
             })
@@ -46,6 +49,8 @@ class TorrentProperty {
                     if(error){
                         console.log(error)
                         // this.redo.push(data.infoHash)
+                    } else {
+                        this.emit('deactivated', data)
                     }
                 })
             })
