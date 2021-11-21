@@ -64,14 +64,32 @@ class TorrentProperty extends EventEmitter {
     async startUp(){
         if(fs.existsSync(this.storage)){
             let props = this.webproperty.getAll(null)
-            let dirs = fs.readFileSync(this.storage)
+            let dirs = await new Promise((resolve, reject) => {
+                fs.readdir(this.storage, {withFileTypes: false}, (error, files) => {
+                    if(error){
+                        reject(null)
+                    } else if(files){
+                        resolve(files)
+                    } else {
+                        reject(null)
+                    }
+                })
+            })
             let has = props.filter(data => {return dirs.includes(data.address)})
             props = props.map(data => {return data.address})
             let hasNot = dirs.filter(data => {return !props.includes(data)})
             if(hasNot.length){
                 for(let i = 0;i < hasNot.length;i++){
                     if(this.takeOutUnManaged){
-                        fs.rmSync(this.storage + path.sep + hasNot[i], {recursive: true, force: true})
+                        await new Promise((resolve, reject) => {
+                            fs.rm(this.storage + path.sep + hasNot[i], {recursive: true, force: true}, error => {
+                                if(error){
+                                    reject(false)
+                                } else {
+                                    resolve(true)
+                                }
+                            })
+                        })
                     } else {
                         await new Promise((resolve) => {
                             this.webtorrent.seed(this.storage + path.sep + '_' + hasNot[i], {path: this.storage + path.sep + has[i].address, destroyStoreOnDestroy: true}, torrent => {
@@ -99,6 +117,7 @@ class TorrentProperty extends EventEmitter {
         } else {
             fs.mkdirSync(this.storage, {recursive: true})
         }
+        this.emit('start', true)
     }
     async removeUnManaged(){
         let tempTorrents = this.webtorrent.torrents.filter(data => {return data.unmanaged}).map(data => {return data.infoHash})
