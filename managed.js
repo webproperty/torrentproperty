@@ -8,11 +8,11 @@ class TorrentProperty extends EventEmitter {
     constructor(opt){
         super()
         if(!opt){
-            opt.storage = __dirname + '/storage'
+            opt.storage = path.resolve(__dirname + '/storage')
             opt.takeOutInActive = false
         } else {
             if(!opt.storage){
-                opt.storage = __dirname + '/storage'
+                opt.storage = path.resolve(__dirname + '/storage')
             }
             if(!opt.takeOutInActive){
                 opt.takeOutInActive = false
@@ -38,12 +38,12 @@ class TorrentProperty extends EventEmitter {
                     console.log(error)
                     // this.redo.push(data.old)
                 }
-                this.webtorrent.add(data.new.infoHash, {path: this.storage + path.sep + data.new.address, destroyStoreOnDestroy: true}, torrent => {
+                this.webtorrent.add(data.new.infoHash, {path: path.resolve(this.storage + path.sep + data.new.address), destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.new.address
                     torrent.seq = data.new.seq
                     torrent.isActive = data.new.isActive
                     torrent.own = data.new.own
-                    torrent.folder = this.storage + path.sep + data.new.address
+                    torrent.folder = path.resolve(this.storage + path.sep + data.new.address)
                     this.emit('updated', torrent)
                     // console.log('the following torrent has been updated: ' + torrent.address)
                 })
@@ -88,7 +88,7 @@ class TorrentProperty extends EventEmitter {
             if(hasNot.length){
                 for(let i = 0;i < hasNot.length;i++){
                     await new Promise((resolve, reject) => {
-                        fs.rm(this.storage + path.sep + hasNot[i], {recursive: true, force: true}, error => {
+                        fs.rm(path.resolve(this.storage + path.sep + hasNot[i]), {recursive: true, force: true}, error => {
                             if(error){
                                 reject(false)
                             } else {
@@ -101,12 +101,12 @@ class TorrentProperty extends EventEmitter {
             if(has.length){
                 for(let i = 0;i < has.length;i++){
                     await new Promise((resolve) => {
-                        this.webtorrent.seed(this.storage + path.sep + has[i].address, {path: this.storage + path.sep + has[i].address, destroyStoreOnDestroy: true}, torrent => {
+                        this.webtorrent.seed(path.resolve(this.storage + path.sep + has[i].address), {path: path.resolve(this.storage + path.sep + has[i].address), destroyStoreOnDestroy: true}, torrent => {
                             torrent.address = has[i].address
                             torrent.seq = has[i].seq
                             torrent.isActive = has[i].isActive
                             torrent.own = has[i].own
-                            torrent.folder = this.storage + path.sep + has[i].address
+                            torrent.folder = path.resolve(this.storage + path.sep + has[i].address)
                             resolve(torrent)
                         })
                     })
@@ -143,12 +143,12 @@ class TorrentProperty extends EventEmitter {
             if(error){
                 return callback(error)
             } else {
-                this.webtorrent.add(data.infoHash, {path: this.storage + path.sep + data.address, destroyStoreOnDestroy: true}, torrent => {
+                this.webtorrent.add(data.infoHash, {path: path.resolve(this.storage + path.sep + data.address), destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.address
                     torrent.seq = data.seq
                     torrent.isActive = data.isActive
                     torrent.own = data.own
-                    torrent.folder = this.storage + path.sep + data.address
+                    torrent.folder = path.resolve(this.storage + path.sep + data.address)
                     return callback(null, torrent)
                 })
             }
@@ -164,7 +164,7 @@ class TorrentProperty extends EventEmitter {
         if((!keypair) || (!keypair.address || !keypair.secret)){
             keypair = this.webproperty.createKeypair(null)
         }
-        this.webtorrent.seed(path.resolve(folder), {path: this.storage + path.sep + keypair.address, destroyStoreOnDestroy: true}, torrent => {
+        this.webtorrent.seed(path.resolve(folder), {path: path.resolve(this.storage + path.sep + keypair.address), destroyStoreOnDestroy: true}, torrent => {
             this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
                 if(error){
                     this.webtorrent.remove(torrent.infoHash, {destroyStore: true})
@@ -174,7 +174,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = data.seq
                     torrent.isActive = data.isActive
                     torrent.own = data.own
-                    torrent.folder = this.storage + path.sep + keypair.address
+                    torrent.folder = path.resolve(this.storage + path.sep + keypair.address)
                     return callback(null, torrent)
                 }
             })
