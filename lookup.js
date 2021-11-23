@@ -5,6 +5,7 @@ const fs = require('fs')
 class TorrentProperty {
     constructor(opt){
         if(!opt){
+            opt = {}
             opt.storage = __dirname + '/storage'
         } else {
             if(!opt.storage){
@@ -15,6 +16,9 @@ class TorrentProperty {
         this.webtorrent = new WebTorrent({dht: {verify}})
         this.webproperty = new WebProperty({dht: this.webtorrent.dht})
         this.start()
+        this.webproperty.on('error', error => {
+            console.log(error)
+        })
         this.webtorrent.on('error', error => {
             console.log(error)
         })
@@ -30,23 +34,12 @@ class TorrentProperty {
             fs.mkdirSync(this.storage, {recursive: true})
         }
     }
-    async download(address, callback){
+    download(address, callback){
         if(!callback){
             callback = () => {}
         }
         for(let i = 0;i < this.webtorrent.torrents.length;i++){
-            let res = await new Promise((resolve, reject) => {
-                this.webtorrent.remove(this.webtorrent.torrents[i].infoHash, {destroyStore: true}, error => {
-                    if(error){
-                        reject(false)
-                    } else {
-                        resolve(true)
-                    }
-                })
-            })
-            if(!res){
-                return callback(new Error('could not delete current torrent'))
-            }
+            this.webtorrent.remove(this.webtorrent.torrents[i].infoHash, {destroyStore: true})
         }
         this.webproperty.resolve(this.webproperty.addressFromLink(address), (error, data) => {
             if(error){

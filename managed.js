@@ -19,13 +19,17 @@ class TorrentProperty extends EventEmitter {
             }
         }
         // this.redo = []
-        this.storage = opt.storage
+        this.busyAndNotReady = false
+        this.storage = path.resolve(opt.storage)
         this.takeOutInActive = opt.takeOutInActive
         this.webtorrent = new WebTorrent({dht: {verify}})
         this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive})
         this.startUp()
         this.webtorrent.on('error', error => {
-            console.log(error)
+            this.emit('error', error)
+        })
+        this.webproperty.on('error', error => {
+            this.emit('error', error)
         })
         this.webproperty.on('update', data => {
             this.webtorrent.remove(data.old, {destroyStore: true}, error => {
@@ -38,6 +42,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = data.new.seq
                     torrent.isActive = data.new.isActive
                     torrent.own = data.new.own
+                    torrent.folder = this.storage + path.sep + data.new.address
                     this.emit('updated', {torrent: {address: torrent.address, infoHash: torrent.infoHash}, data: data.new})
                     // console.log('the following torrent has been updated: ' + torrent.address)
                 })
@@ -56,8 +61,12 @@ class TorrentProperty extends EventEmitter {
             })
         }
         // this.startRedo()
+        this.webproperty.on('check', data => {
+            this.emit('checked', data)
+        })
     }
     async startUp(){
+        this.busyAndNotReady = true
         if(fs.existsSync(this.storage)){
             let props = this.webproperty.getAll(null)
             let dirs = await new Promise((resolve, reject) => {
@@ -95,6 +104,7 @@ class TorrentProperty extends EventEmitter {
                             torrent.seq = has[i].seq
                             torrent.isActive = has[i].isActive
                             torrent.own = has[i].own
+                            torrent.folder = this.storage + path.sep + has[i].address
                             resolve(torrent)
                         })
                     })
@@ -103,7 +113,8 @@ class TorrentProperty extends EventEmitter {
         } else {
             fs.mkdirSync(this.storage, {recursive: true})
         }
-        this.emit('start', true)
+        this.busyAndNotReady = false
+        this.emit('started', true)
     }
     // async startRedo(){
     //     for(let i = 0;i < this.redo.length;i++){
@@ -122,7 +133,7 @@ class TorrentProperty extends EventEmitter {
     //         this.startRedo()
     //     }, 3600000)
     // }
-    download(address, callback){
+    load(address, callback){
         if(!callback){
             callback = function(){}
         }
@@ -135,12 +146,13 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = data.seq
                     torrent.isActive = data.isActive
                     torrent.own = data.own
+                    torrent.folder = this.storage + path.sep + data.address
                     return callback(null, {torrent, data})
                 })
             }
         })
     }
-    upload(folder, keypair, seq, callback){
+    publish(folder, keypair, seq, callback){
         if(!callback){
             callback = function(){}
         }
@@ -157,12 +169,13 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = data.seq
                     torrent.isActive = data.isActive
                     torrent.own = data.own
+                    torrent.folder = this.storage + path.sep + keypair.address
                     return callback(null, {torrent, data})
                 }
             })
         })
     }
-    rubbish(address, callback){
+    remove(address, callback){
         if(!callback){
             callback = function(){}
         }
@@ -170,7 +183,7 @@ class TorrentProperty extends EventEmitter {
             if(resError){
                 return callback(resError)
             } else {
-                this.webtorrent.remove(resProp.infoHash, {destroyStore: true}, error => {
+                this.webtorrent.remove(resProp.data.infoHash, {destroyStore: true}, error => {
                     if(error){
                         return callback(error)
                     } else {
