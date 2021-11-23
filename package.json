@@ -1,6 +1,6 @@
 {
   "name": "torrentproperty",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "webproperty": "^1.1.0",
+    "webproperty": "^1.1.1",
     "webtorrent": "^1.5.8"
   }
 }
