@@ -156,10 +156,13 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = function(){}
         }
+        if(!folder){
+            return callback(new Error('must have folder'))
+        }
         if((!keypair) || (!keypair.address || !keypair.secret)){
             keypair = this.webproperty.createKeypair(null)
         }
-        this.webtorrent.seed(folder, {path: this.storage + path.sep + keypair.address, destroyStoreOnDestroy: true}, torrent => {
+        this.webtorrent.seed(path.resolve(folder), {path: this.storage + path.sep + keypair.address, destroyStoreOnDestroy: true}, torrent => {
             this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
                 if(error){
                     this.webtorrent.remove(torrent.infoHash, {destroyStore: true})
