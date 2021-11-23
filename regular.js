@@ -38,6 +38,7 @@ class TorrentProperty extends EventEmitter {
         this.webproperty.on('update', data => {
             this.webtorrent.remove(data.old, {destroyStore: true}, error => {
                 if(error){
+                    this.emit('error', error)
                     console.log(error)
                     // this.redo.push(data.old)
                 }
@@ -48,7 +49,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.own = data.new.own
                     torrent.folder = this.storage + path.sep + data.new.address
                     // console.log('the following torrent has been updated: ' + torrent.address)
-                    this.emit('updated', {torrent: {address: torrent.address, infoHash: torrent.infoHash}, data: data.new})
+                    this.emit('updated', torrent)
                 })
             })
         })
@@ -56,6 +57,7 @@ class TorrentProperty extends EventEmitter {
             this.webproperty.on('inactive', data => {
                 this.webtorrent.remove(data.infoHash, {destroyStore: true}, error => {
                     if(error){
+                        this.emit('error', error)
                         console.log(error)
                         // this.redo.push(data.infoHash)
                     } else {
@@ -166,7 +168,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.isActive = data.isActive
                     torrent.own = data.own
                     torrent.folder = this.storage + path.sep + data.address
-                    return callback(null, {torrent, data})
+                    return callback(null, torrent)
                 })
             }
         })
@@ -192,7 +194,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.isActive = data.isActive
                     torrent.own = data.own
                     torrent.folder = this.storage + path.sep + keypair.address
-                    return callback(null, {torrent, data})
+                    return callback(null, torrent)
                 }
             })
         })
