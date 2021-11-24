@@ -87,6 +87,7 @@ class TorrentProperty extends EventEmitter {
     }
     async startUp(){
         this.busyAndNotReady = true
+        this.emit('started', false)
         if(fs.existsSync(this.storage)){
             let props = this.webproperty.getAll(null)
             let dirs = await new Promise((resolve, reject) => {
@@ -144,8 +145,8 @@ class TorrentProperty extends EventEmitter {
         } else {
             fs.mkdirSync(this.storage, {recursive: true})
         }
-        this.busyAndNotReady = false
         this.emit('started', true)
+        this.busyAndNotReady = false
     }
     async removeUnManaged(){
         let tempTorrents = this.webtorrent.torrents.filter(data => {return data.unmanaged}).map(data => {return data.infoHash})
