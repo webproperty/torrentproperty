@@ -36,22 +36,36 @@ class TorrentProperty extends EventEmitter {
             this.emit('error', error)
         })
         this.webproperty.on('update', data => {
-            this.webtorrent.remove(data.old, {destroyStore: true}, error => {
-                if(error){
-                    this.emit('error', error)
-                    console.log(error)
-                    // this.redo.push(data.old)
+            if(data.sameInfoHash){
+                let tempTorrent = this.webtorrent.get(data.old.infoHash)
+                if(tempTorrent){
+                    tempTorrent.address = data.new.address
+                    tempTorrent.seq = data.new.seq
+                    tempTorrent.isActive = data.new.isActive
+                    tempTorrent.own = data.new.own
+                    this.emit('updated', tempTorrent)
+                } else {
+                    this.emit('error', new Error('could not find torrent to update'))
+                    console.log(new Error('could not find torrent to update'))
                 }
-                this.webtorrent.add(data.new.infoHash, {path: path.resolve(this.storage + path.sep + data.new.address), destroyStoreOnDestroy: true}, torrent => {
-                    torrent.address = data.new.address
-                    torrent.seq = data.new.seq
-                    torrent.isActive = data.new.isActive
-                    torrent.own = data.new.own
-                    torrent.folder = path.resolve(this.storage + path.sep + data.new.address)
-                    // console.log('the following torrent has been updated: ' + torrent.address)
-                    this.emit('updated', torrent)
+            } else {
+                this.webtorrent.remove(data.old.infoHash, {destroyStore: true}, error => {
+                    if(error){
+                        this.emit('error', error)
+                        console.log(error)
+                        // this.redo.push(data.old)
+                    }
+                    this.webtorrent.add(data.new.infoHash, {path: path.resolve(this.storage + path.sep + data.new.address), destroyStoreOnDestroy: true}, torrent => {
+                        torrent.address = data.new.address
+                        torrent.seq = data.new.seq
+                        torrent.isActive = data.new.isActive
+                        torrent.own = data.new.own
+                        torrent.folder = path.resolve(this.storage + path.sep + data.new.address)
+                        // console.log('the following torrent has been updated: ' + torrent.address)
+                        this.emit('updated', torrent)
+                    })
                 })
-            })
+            }
         })
         if(this.takeOutInActive){
             this.webproperty.on('inactive', data => {
