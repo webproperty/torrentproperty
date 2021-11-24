@@ -80,6 +80,14 @@ class TorrentProperty extends EventEmitter {
         this.webproperty.on('check', data => {
             this.emit('checked', data)
         })
+
+        const startHandler = (data) => {
+            if(data){
+                this.startUp()
+                this.webproperty.off('start', startHandler)
+            }
+        }
+        this.webproperty.on('start', startHandler)
     }
     async startUp(){
         this.busyAndNotReady = true
