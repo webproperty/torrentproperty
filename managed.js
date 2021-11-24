@@ -163,7 +163,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.isActive = data.isActive
                     torrent.own = data.own
                     torrent.folder = path.resolve(this.storage + path.sep + data.address)
-                    return callback(null, torrent)
+                    return callback(null, {torrent, data})
                 })
             }
         })
@@ -189,7 +189,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.isActive = data.isActive
                     torrent.own = data.own
                     torrent.folder = path.resolve(this.storage + path.sep + keypair.address)
-                    return callback(null, torrent)
+                    return callback(null, {torrent, data})
                 }
             })
         })
