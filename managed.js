@@ -24,7 +24,9 @@ class TorrentProperty extends EventEmitter {
         this.takeOutInActive = opt.takeOutInActive
         this.webtorrent = new WebTorrent({dht: {verify}})
         this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive})
-        this.startUp()
+        this.startUp().catch(error => {
+            this.emit('error', error)
+        })
         this.webtorrent.on('error', error => {
             this.emit('error', error)
         })
@@ -83,7 +85,9 @@ class TorrentProperty extends EventEmitter {
 
         const startHandler = (data) => {
             if(data){
-                this.startUp()
+                this.startUp().catch(error => {
+                    this.emit('error', error)
+                })
                 this.webproperty.off('start', startHandler)
             }
         }

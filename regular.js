@@ -28,7 +28,9 @@ class TorrentProperty extends EventEmitter {
         this.takeOutUnManaged = opt.takeOutUnManaged
         this.webtorrent = new WebTorrent({dht: {verify}})
         this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive})
-        this.startUp()
+        this.startUp().catch(error => {
+            this.emit('error', error)
+        })
         this.webtorrent.on('error', error => {
             this.emit('error', error)
         })
@@ -86,13 +88,17 @@ class TorrentProperty extends EventEmitter {
 
         const startHandler = (data) => {
             if(data){
-                this.startUp()
+                this.startUp().catch(error => {
+                    this.emit('error', error)
+                })
                 this.webproperty.off('start', startHandler)
             }
         }
         this.webproperty.on('start', startHandler)
         
-        this.keepThingsUpdated()
+        this.keepThingsUpdated().catch(error => {
+            this.emit('error', error)
+        })
     }
     async startUp(){
         this.busyAndNotReady = true
@@ -176,7 +182,10 @@ class TorrentProperty extends EventEmitter {
         if(this.takeOutUnManaged){
             await this.removeUnManaged()
         }
-        setTimeout(() => {this.keepThingsUpdated()}, 3600000)
+        setTimeout(() => {
+            this.keepThingsUpdated().catch(error => {
+                this.emit('error', error)
+            })}, 3600000)
     }
     load(address, manage, callback){
         if(!callback){
