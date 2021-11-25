@@ -51,7 +51,7 @@ class TorrentProperty extends EventEmitter {
                         console.log(error)
                         // this.redo.push(data.old)
                     }
-                    this.webtorrent.add(data.new.infoHash, {path: path.resolve(this.storage + path.sep + data.new.address), destroyStoreOnDestroy: true}, torrent => {
+                    this.webtorrent.add(data.new.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                         torrent.address = data.new.address
                         torrent.seq = data.new.seq
                         torrent.isActive = data.new.isActive
@@ -100,7 +100,7 @@ class TorrentProperty extends EventEmitter {
                         reject(null)
                     } else if(files){
                         resolve(files)
-                    } else {
+                    } else if(!files){
                         reject(null)
                     }
                 })
@@ -124,7 +124,7 @@ class TorrentProperty extends EventEmitter {
             if(has.length){
                 for(let i = 0;i < has.length;i++){
                     await new Promise((resolve) => {
-                        this.webtorrent.seed(path.resolve(this.storage + path.sep + has[i].address), {path: path.resolve(this.storage + path.sep + has[i].address), destroyStoreOnDestroy: true}, torrent => {
+                        this.webtorrent.seed(path.resolve(this.storage + path.sep + has[i].address), {destroyStoreOnDestroy: true}, torrent => {
                             torrent.address = has[i].address
                             torrent.seq = has[i].seq
                             torrent.isActive = has[i].isActive
@@ -166,7 +166,7 @@ class TorrentProperty extends EventEmitter {
             if(error){
                 return callback(error)
             } else {
-                this.webtorrent.add(data.infoHash, {path: path.resolve(this.storage + path.sep + data.address), destroyStoreOnDestroy: true}, torrent => {
+                this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.address
                     torrent.seq = data.seq
                     torrent.isActive = data.isActive
@@ -181,26 +181,51 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = function(){}
         }
-        if(!folder){
+        // if((!folder || typeof(folder) !== 'string') || (!folder.includes('/') && !folder.includes('\\')) || path.resolve(folder).split(path.sep).length < 2){
+        //     return callback(new Error('must have folder'))
+        // }
+        if((!folder || typeof(folder) !== 'string') || (!folder.includes('/') && !folder.includes('\\'))){
             return callback(new Error('must have folder'))
         }
         if((!keypair) || (!keypair.address || !keypair.secret)){
             keypair = this.webproperty.createKeypair(null)
         }
-        this.webtorrent.seed(path.resolve(folder), {path: path.resolve(this.storage + path.sep + keypair.address), destroyStoreOnDestroy: true}, torrent => {
-            this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
-                if(error){
-                    this.webtorrent.remove(torrent.infoHash, {destroyStore: true})
-                    return callback(error)
-                } else {
-                    torrent.address = data.address
-                    torrent.seq = data.seq
-                    torrent.isActive = data.isActive
-                    torrent.own = data.own
-                    torrent.folder = path.resolve(this.storage + path.sep + keypair.address)
-                    return callback(null, {torrent, data})
-                }
-            })
+        try {
+            folder = {main: path.resolve(folder).split(path.sep).filter(Boolean)}
+            folder.old = folder.main.pop()
+            folder.new = keypair.address
+            folder.main = folder.main.join(path.sep)
+            folder.old = path.resolve(folder.main + path.sep + folder.old)
+            folder.new = path.resolve(folder.main + path.sep + folder.new)
+            delete folder.main
+        } catch (error) {
+            return callback(error)
+        }
+        fs.rename(folder.old, folder.new, error => {
+            if(error){
+                return callback(error)
+            } else {
+                this.webtorrent.seed(folder.new, {destroyStoreOnDestroy: true}, torrent => {
+                    this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
+                        if(error){
+                            this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
+                                if(resError){
+                                    return callback(resError)
+                                } else {
+                                    return callback(error)
+                                }
+                            })
+                        } else {
+                            torrent.address = data.address
+                            torrent.seq = data.seq
+                            torrent.isActive = data.isActive
+                            torrent.own = data.own
+                            torrent.folder = folder.new
+                            return callback(null, {torrent, data})
+                        }
+                    })
+                })
+            }
         })
     }
     remove(address, callback){
