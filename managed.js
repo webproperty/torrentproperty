@@ -46,9 +46,9 @@ class TorrentProperty extends EventEmitter {
                     })
                 }
             }
-            this.emit('checked', data)
         })
     }
+
     async startUp(){
         this.busyAndNotReady = true
         this.emit('started', false)
@@ -110,6 +110,8 @@ class TorrentProperty extends EventEmitter {
     }
 
     async keepItUpdated(){
+        this.busyAndNotReady = true
+        this.emit('checked', false)
         let props = this.webproperty.getAll(null)
         let allTorrents = this.webtorrent.torrents.map(data => {return data.infoHash})
         let propz = props.map(data => {return data.infoHash})
@@ -165,6 +167,8 @@ class TorrentProperty extends EventEmitter {
                 })
             }
         }
+        this.emit('checked', true)
+        this.busyAndNotReady = false
     }
     // async startRedo(){
     //     for(let i = 0;i < this.redo.length;i++){
