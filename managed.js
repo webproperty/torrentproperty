@@ -51,6 +51,7 @@ class TorrentProperty extends EventEmitter {
 
     async startUp(){
         this.busyAndNotReady = true
+        this.emit('checked', false)
         for(let i = 0;i < this.webtorrent.torrents.length;i++){
             await new Promise((resolve, reject) => {
                 this.webtorrent.remove(this.webtorrent.torrents[i].infoHash, {destroyStore: false}, error => {
@@ -104,6 +105,7 @@ class TorrentProperty extends EventEmitter {
                 })
             }
         }
+        this.emit('checked', true)
         this.busyAndNotReady = false
     }
 
