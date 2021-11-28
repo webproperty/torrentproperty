@@ -99,7 +99,7 @@ class TorrentProperty extends EventEmitter {
                         torrent.active = props[i].active
                         torrent.own = props[i].own
                         torrent.site = props[i].magnet
-                        torrent.folder = path.resolve(this.storage + path.sep + has[i].address)
+                        torrent.folder = path.resolve(this.storage + path.sep + props[i].address)
                         resolve(torrent)
                     })
                 })
