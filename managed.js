@@ -8,142 +8,163 @@ class TorrentProperty extends EventEmitter {
     constructor(opt){
         super()
         if(!opt){
-            opt.storage = path.resolve(__dirname + '/storage')
+            opt.storage = path.resolve('./folder')
             opt.takeOutInActive = false
         } else {
             if(!opt.storage){
-                opt.storage = path.resolve(__dirname + '/storage')
+                opt.storage = path.resolve('./folder')
             }
             if(!opt.takeOutInActive){
                 opt.takeOutInActive = false
             }
         }
-        // this.redo = []
         this.busyAndNotReady = false
         this.storage = path.resolve(opt.storage)
+        if(!fs.existsSync(this.storage)){
+            fs.mkdirSync(this.storage, {recursive: true})
+        }
         this.takeOutInActive = opt.takeOutInActive
         this.webtorrent = new WebTorrent({dht: {verify}})
         this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive})
-        this.startUp().catch(error => {
-            this.emit('error', error)
-        })
+        this.started = true
         this.webtorrent.on('error', error => {
             this.emit('error', error)
         })
         this.webproperty.on('error', error => {
             this.emit('error', error)
         })
-        this.webproperty.on('update', data => {
-            if(data.sameInfoHash){
-                let tempTorrent = this.webtorrent.get(data.old.infoHash)
-                if(tempTorrent){
-                    tempTorrent.address = data.new.address
-                    tempTorrent.seq = data.new.seq
-                    tempTorrent.isActive = data.new.isActive
-                    tempTorrent.own = data.new.own
-                    this.emit('updated', tempTorrent)
-                } else {
-                    this.emit('error', new Error('could not find torrent to update'))
-                    console.log(new Error('could not find torrent to update'))
-                }
-            } else {
-                this.webtorrent.remove(data.old.infoHash, {destroyStore: true}, error => {
-                    if(error){
-                        this.emit('error', error)
-                        console.log(error)
-                        // this.redo.push(data.old)
-                    }
-                    this.webtorrent.add(data.new.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
-                        torrent.address = data.new.address
-                        torrent.seq = data.new.seq
-                        torrent.isActive = data.new.isActive
-                        torrent.own = data.new.own
-                        torrent.folder = path.resolve(this.storage + path.sep + data.new.address)
-                        // console.log('the following torrent has been updated: ' + torrent.address)
-                        this.emit('updated', torrent)
-                    })
-                })
-            }
-        })
-        if(this.takeOutInActive){
-            this.webproperty.on('inactive', data => {
-                this.webtorrent.remove(data.infoHash, {destroyStore: true}, error => {
-                    if(error){
-                        this.emit('error', error)
-                        console.log(error)
-                        // this.redo.push(data.infoHash)
-                    } else {
-                        this.emit('deactivated', data)
-                    }
-                })
-            })
-        }
-        // this.startRedo()
         this.webproperty.on('check', data => {
+            if(data){
+                if(this.started){
+                    this.startUp().catch(error => {
+                        this.emit('error', error)
+                    })
+                    this.started = false
+                } else {
+                    this.keepItUpdated().catch(error => {
+                        this.emit('error', error)
+                    })
+                }
+            }
             this.emit('checked', data)
         })
-
-        const startHandler = (data) => {
-            if(data){
-                this.startUp().catch(error => {
-                    this.emit('error', error)
-                })
-                this.webproperty.off('start', startHandler)
-            }
-        }
-        this.webproperty.on('start', startHandler)
     }
     async startUp(){
         this.busyAndNotReady = true
         this.emit('started', false)
-        if(fs.existsSync(this.storage)){
-            let props = this.webproperty.getAll(null)
-            let dirs = await new Promise((resolve, reject) => {
-                fs.readdir(this.storage, {withFileTypes: false}, (error, files) => {
+        for(let i = 0;i < this.webtorrent.torrents.length;i++){
+            await new Promise((resolve, reject) => {
+                this.webtorrent.remove(this.webtorrent.torrents[i].infoHash, {destroyStore: false}, error => {
                     if(error){
-                        reject(null)
-                    } else if(files){
-                        resolve(files)
-                    } else if(!files){
-                        reject(null)
+                        reject(false)
+                    } else {
+                        resolve(true)
                     }
                 })
             })
-            let has = props.filter(data => {return dirs.includes(data.address)})
-            props = props.map(data => {return data.address})
-            let hasNot = dirs.filter(data => {return !props.includes(data)})
-            if(hasNot.length){
-                for(let i = 0;i < hasNot.length;i++){
-                    await new Promise((resolve, reject) => {
-                        fs.rm(path.resolve(this.storage + path.sep + hasNot[i]), {recursive: true, force: true}, error => {
-                            if(error){
-                                reject(false)
-                            } else {
-                                resolve(true)
-                            }
-                        })
-                    })
+        }
+        let props = this.webproperty.getAll(null)
+        let propz = props.map(data => {return data.address})
+        let dirs = await new Promise((resolve, reject) => {
+            fs.readdir(this.storage, {withFileTypes: true}, (error, files) => {
+                if(error){
+                    reject([])
+                } else if(files){
+                    resolve(files)
+                } else if(!files){
+                    reject([])
                 }
-            }
-            if(has.length){
-                for(let i = 0;i < has.length;i++){
-                    await new Promise((resolve) => {
-                        this.webtorrent.seed(path.resolve(this.storage + path.sep + has[i].address), {destroyStoreOnDestroy: true}, torrent => {
-                            torrent.address = has[i].address
-                            torrent.seq = has[i].seq
-                            torrent.isActive = has[i].isActive
-                            torrent.own = has[i].own
-                            torrent.folder = path.resolve(this.storage + path.sep + has[i].address)
-                            resolve(torrent)
-                        })
+            })
+        })
+        let hasNot = dirs.filter(data => {return !propz.includes(data)})
+        if(hasNot.length){
+            for(let i = 0;i < hasNot.length;i++){
+                await new Promise((resolve, reject) => {
+                    fs.rm(path.resolve(this.storage + path.sep + hasNot[i]), {recursive: true, force: true}, error => {
+                        if(error){
+                            reject(false)
+                        } else {
+                            resolve(true)
+                        }
                     })
-                }
+                })
             }
-        } else {
-            fs.mkdirSync(this.storage, {recursive: true})
+        }
+        if(props.length){
+            for(let i = 0;i < props.length;i++){
+                await new Promise((resolve) => {
+                    this.webtorrent.add(props[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
+                        torrent.address = props[i].address
+                        torrent.seq = props[i].seq
+                        torrent.active = props[i].active
+                        torrent.own = props[i].own
+                        torrent.site = props[i].magnet
+                        torrent.folder = path.resolve(this.storage + path.sep + has[i].address)
+                        resolve(torrent)
+                    })
+                })
+            }
         }
         this.emit('started', true)
         this.busyAndNotReady = false
+    }
+
+    async keepItUpdated(){
+        let props = this.webproperty.getAll(null)
+        let allTorrents = this.webtorrent.torrents.map(data => {return data.infoHash})
+        let propz = props.map(data => {return data.infoHash})
+        let dropTorrents = allTorrents.filter(data => {return !propz.includes(data)})
+        let testTorrents = allTorrents.filter(data => {return propz.includes(data)})
+        let needTorrents = props.filter(data => {return !testTorrents.includes(data.infoHash)})
+        let updateTorrents = props.filter(data => {return testTorrents.includes(data.infoHash)})
+        for(let i = 0;i < dropTorrents.length;i++){
+            await new Promise((resolve, reject) => {
+                this.webtorrent.remove(dropTorrents[i], {destroyStore: true}, error => {
+                    if(error){
+                        this.emit('error', error)
+                        reject(false)
+                    } else {
+                        resolve(true)
+                    }
+                })
+            })
+        }
+        for(let i = 0;i < needTorrents.length;i++){
+            await new Promise(resolve => {
+                this.webtorrent.add(needTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
+                    torrent.address = needTorrents[i].address
+                    torrent.seq = needTorrents[i].seq
+                    torrent.own = needTorrents[i].own
+                    torrent.active = needTorrents[i].active
+                    torrent.site = needTorrents[i].magnet
+                    torrent.folder = path.resolve(this.storage + path.sep + needTorrents[i].address)
+                    resolve(torrent)
+                })
+            })
+        }
+        for(let i = 0;i < updateTorrents.length;i++){
+            let tempTorrent = this.webtorrent.get(updateTorrents[i].infoHash)
+            if(tempTorrent){
+                tempTorrent.address = updateTorrents[i].address
+                tempTorrent.seq = updateTorrents[i].seq
+                tempTorrent.own = updateTorrents[i].own
+                tempTorrent.active = updateTorrents[i].active
+                tempTorrent.site = updateTorrents[i].magnet
+                tempTorrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
+            } else {
+                await new Promise(resolve => {
+                    this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
+                        torrent.address = updateTorrents[i].address
+                        torrent.seq = updateTorrents[i].seq
+                        torrent.own = updateTorrents[i].own
+                        torrent.active = updateTorrents[i].active
+                        torrent.site = updateTorrents[i].magnet
+                        torrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
+                        resolve(torrent)
+                    })
+                })
+            }
+        }
     }
     // async startRedo(){
     //     for(let i = 0;i < this.redo.length;i++){
@@ -173,7 +194,7 @@ class TorrentProperty extends EventEmitter {
                 this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.address
                     torrent.seq = data.seq
-                    torrent.isActive = data.isActive
+                    torrent.active = data.active
                     torrent.own = data.own
                     torrent.folder = path.resolve(this.storage + path.sep + data.address)
                     return callback(null, {torrent, data})
@@ -222,7 +243,7 @@ class TorrentProperty extends EventEmitter {
                         } else {
                             torrent.address = data.address
                             torrent.seq = data.seq
-                            torrent.isActive = data.isActive
+                            torrent.active = data.active
                             torrent.own = data.own
                             torrent.folder = folder.new
                             return callback(null, {torrent, data})
@@ -240,15 +261,25 @@ class TorrentProperty extends EventEmitter {
             if(resError){
                 return callback(resError)
             } else {
-                this.webtorrent.remove(resProp.data.infoHash, {destroyStore: true}, error => {
+                this.webtorrent.remove(this.findTheTorrent(resProp.address).infoHash, {destroyStore: true}, error => {
                     if(error){
                         return callback(error)
                     } else {
-                        callback(null, 'torrent has been deleted')
+                        callback(null, resProp)
                     }
                 })
             }
         })
+    }
+    findTheTorrent(address){
+        let tempTorrent = null
+        for(let i = 0;i < this.webtorrent.torrents.length;i++){
+            if(this.webtorrent.torrents[i].address === address){
+                tempTorrent = this.webtorrent.torrents[i]
+                break
+            }
+        }
+        return tempTorrent
     }
 }
 
