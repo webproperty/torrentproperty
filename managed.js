@@ -3,6 +3,7 @@ const {WebProperty, verify} = require('webproperty/managed.js')
 const fs = require('fs')
 const path = require('path')
 const EventEmitter = require('events').EventEmitter
+const { EROFS } = require('constants')
 
 class TorrentProperty extends EventEmitter {
     constructor(opt){
@@ -267,13 +268,25 @@ class TorrentProperty extends EventEmitter {
             if(resError){
                 return callback(resError)
             } else {
-                this.webtorrent.remove(this.findTheTorrent(resProp.address).infoHash, {destroyStore: true}, error => {
-                    if(error){
-                        return callback(error)
-                    } else {
-                        callback(null, resProp)
-                    }
-                })
+                    // this.webtorrent.remove(resProp.infoHash, {destroyStore: true}, error => {
+                    //     if(error){
+                    //         return callback(error)
+                    //     } else {
+                    //         return callback(null, resProp)
+                    //     }
+                    // })
+                let tempTorrent = this.findTheTorrent(resProp.address)
+                if(tempTorrent){
+                    this.webtorrent.remove(tempTorrent.infoHash, {destroyStore: true}, error => {
+                        if(error){
+                            return callback(error)
+                        } else {
+                            return callback(null, {torrent: tempTorrent, data: resProp})
+                        }
+                    })
+                } else {
+                    return callback(new Error('did not find torrent'))
+                }
             }
         })
     }
