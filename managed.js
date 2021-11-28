@@ -116,9 +116,9 @@ class TorrentProperty extends EventEmitter {
         let allTorrents = this.webtorrent.torrents.map(data => {return data.infoHash})
         let propz = props.map(data => {return data.infoHash})
         let dropTorrents = allTorrents.filter(data => {return !propz.includes(data)})
-        let testTorrents = allTorrents.filter(data => {return propz.includes(data)})
-        let needTorrents = props.filter(data => {return !testTorrents.includes(data.infoHash)})
-        let updateTorrents = props.filter(data => {return testTorrents.includes(data.infoHash)})
+        // let testTorrents = allTorrents.filter(data => {return propz.includes(data)})
+        let needTorrents = props.filter(data => {return !allTorrents.includes(data.infoHash)})
+        let updateTorrents = props.filter(data => {return allTorrents.includes(data.infoHash)})
         for(let i = 0;i < dropTorrents.length;i++){
             await new Promise((resolve, reject) => {
                 this.webtorrent.remove(dropTorrents[i], {destroyStore: true}, error => {
