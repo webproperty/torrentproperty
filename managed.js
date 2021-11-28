@@ -217,7 +217,7 @@ class TorrentProperty extends EventEmitter {
                 if(error){
                     return callback(error)
                 } else {
-                    this.webtorrent.seed(path.resolve(folder), {path: this.storage, name: keypair.address, destroyStoreOnDestroy: true}, torrent => {
+                    this.webtorrent.seed(path.resolve(folder), {name: keypair.address, destroyStoreOnDestroy: true}, torrent => {
                         this.webproperty.publish(keypair, torrent.infoHash, seq, (mainError, data) => {
                             if(mainError){
                                 this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
@@ -239,7 +239,7 @@ class TorrentProperty extends EventEmitter {
                 }
             })
         } else {
-            this.webtorrent.seed(path.resolve(folder), {path: this.storage, name: keypair.address, destroyStoreOnDestroy: true}, torrent => {
+            this.webtorrent.seed(path.resolve(folder), {name: keypair.address, destroyStoreOnDestroy: true}, torrent => {
                 this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
                     if(error){
                         this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
