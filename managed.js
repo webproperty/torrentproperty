@@ -200,6 +200,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = data.seq
                     torrent.active = data.active
                     torrent.own = data.own
+                    torrent.site = data.magnet
                     torrent.folder = path.resolve(this.storage + path.sep + data.address)
                     return callback(null, {torrent, data})
                 })
@@ -249,6 +250,7 @@ class TorrentProperty extends EventEmitter {
                             torrent.seq = data.seq
                             torrent.active = data.active
                             torrent.own = data.own
+                            torrent.site = data.magnet
                             torrent.folder = folder.new
                             return callback(null, {torrent, data})
                         }
