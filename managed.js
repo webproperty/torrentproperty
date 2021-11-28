@@ -98,7 +98,6 @@ class TorrentProperty extends EventEmitter {
                         torrent.address = props[i].address
                         torrent.seq = props[i].seq
                         torrent.active = props[i].active
-                        torrent.own = props[i].own
                         torrent.site = props[i].magnet
                         torrent.folder = path.resolve(this.storage + path.sep + props[i].address)
                         resolve(torrent)
@@ -137,7 +136,6 @@ class TorrentProperty extends EventEmitter {
                 this.webtorrent.add(needTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = needTorrents[i].address
                     torrent.seq = needTorrents[i].seq
-                    torrent.own = needTorrents[i].own
                     torrent.active = needTorrents[i].active
                     torrent.site = needTorrents[i].magnet
                     torrent.folder = path.resolve(this.storage + path.sep + needTorrents[i].address)
@@ -150,7 +148,6 @@ class TorrentProperty extends EventEmitter {
             if(tempTorrent){
                 tempTorrent.address = updateTorrents[i].address
                 tempTorrent.seq = updateTorrents[i].seq
-                tempTorrent.own = updateTorrents[i].own
                 tempTorrent.active = updateTorrents[i].active
                 tempTorrent.site = updateTorrents[i].magnet
                 tempTorrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
@@ -159,7 +156,6 @@ class TorrentProperty extends EventEmitter {
                     this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                         torrent.address = updateTorrents[i].address
                         torrent.seq = updateTorrents[i].seq
-                        torrent.own = updateTorrents[i].own
                         torrent.active = updateTorrents[i].active
                         torrent.site = updateTorrents[i].magnet
                         torrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
@@ -200,7 +196,6 @@ class TorrentProperty extends EventEmitter {
                     torrent.address = data.address
                     torrent.seq = data.seq
                     torrent.active = data.active
-                    torrent.own = data.own
                     torrent.site = data.magnet
                     torrent.folder = path.resolve(this.storage + path.sep + data.address)
                     return callback(null, {torrent, data})
@@ -250,7 +245,6 @@ class TorrentProperty extends EventEmitter {
                             torrent.address = data.address
                             torrent.seq = data.seq
                             torrent.active = data.active
-                            torrent.own = data.own
                             torrent.site = data.magnet
                             torrent.folder = folder.new
                             return callback(null, {torrent, data})
