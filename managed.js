@@ -99,7 +99,6 @@ class TorrentProperty extends EventEmitter {
                         torrent.seq = props[i].seq
                         torrent.active = props[i].active
                         torrent.site = props[i].magnet
-                        torrent.folder = path.resolve(this.storage + path.sep + props[i].address)
                         resolve(torrent)
                     })
                 })
@@ -138,7 +137,6 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = needTorrents[i].seq
                     torrent.active = needTorrents[i].active
                     torrent.site = needTorrents[i].magnet
-                    torrent.folder = path.resolve(this.storage + path.sep + needTorrents[i].address)
                     resolve(torrent)
                 })
             })
@@ -150,7 +148,6 @@ class TorrentProperty extends EventEmitter {
                 tempTorrent.seq = updateTorrents[i].seq
                 tempTorrent.active = updateTorrents[i].active
                 tempTorrent.site = updateTorrents[i].magnet
-                tempTorrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
             } else {
                 await new Promise(resolve => {
                     this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
@@ -158,7 +155,6 @@ class TorrentProperty extends EventEmitter {
                         torrent.seq = updateTorrents[i].seq
                         torrent.active = updateTorrents[i].active
                         torrent.site = updateTorrents[i].magnet
-                        torrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
                         resolve(torrent)
                     })
                 })
@@ -188,7 +184,7 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = function(){}
         }
-        this.webproperty.resolve(this.webproperty.addressFromLink(address), (error, data) => {
+        this.webproperty.resolve(address, (error, data) => {
             if(error){
                 return callback(error)
             } else {
@@ -197,7 +193,6 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = data.seq
                     torrent.active = data.active
                     torrent.site = data.magnet
-                    torrent.folder = path.resolve(this.storage + path.sep + data.address)
                     return callback(null, {torrent, data})
                 })
             }
@@ -216,49 +211,96 @@ class TorrentProperty extends EventEmitter {
         if((!keypair) || (!keypair.address || !keypair.secret)){
             keypair = this.webproperty.createKeypair(null)
         }
-        try {
-            folder = {main: path.resolve(folder).split(path.sep).filter(Boolean)}
-            folder.old = folder.main.pop()
-            folder.new = keypair.address
-            folder.main = folder.main.join(path.sep)
-            folder.old = path.resolve(folder.main + path.sep + folder.old)
-            folder.new = path.resolve(folder.main + path.sep + folder.new)
-            delete folder.main
-        } catch (error) {
-            return callback(error)
-        }
-        fs.rename(folder.old, folder.new, error => {
-            if(error){
-                return callback(error)
-            } else {
-                this.webtorrent.seed(folder.new, {destroyStoreOnDestroy: true}, torrent => {
-                    this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
-                        if(error){
-                            this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
-                                if(resError){
-                                    return callback(resError)
-                                } else {
-                                    return callback(error)
-                                }
-                            })
-                        } else {
-                            torrent.address = data.address
-                            torrent.seq = data.seq
-                            torrent.active = data.active
-                            torrent.site = data.magnet
-                            torrent.folder = folder.new
-                            return callback(null, {torrent, data})
-                        }
+        let tempTorrent = this.findTheTorrent(keypair.address)
+        if(tempTorrent){
+            this.webtorrent.remove(tempTorrent.infoHash, {destroyStore: true}, error => {
+                if(error){
+                    return callback(error)
+                } else {
+                    this.webtorrent.seed(path.resolve(folder), {path: this.storage, name: keypair.address, destroyStoreOnDestroy: true}, torrent => {
+                        this.webproperty.publish(keypair, torrent.infoHash, seq, (mainError, data) => {
+                            if(mainError){
+                                this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
+                                    if(resError){
+                                        return callback(resError)
+                                    } else {
+                                        return callback(mainError)
+                                    }
+                                })
+                            } else {
+                                torrent.address = data.address
+                                torrent.seq = data.seq
+                                torrent.active = data.active
+                                torrent.site = data.magnet
+                                return callback(null, {torrent, data})
+                            }
+                        })
                     })
+                }
+            })
+        } else {
+            this.webtorrent.seed(path.resolve(folder), {path: this.storage, name: keypair.address, destroyStoreOnDestroy: true}, torrent => {
+                this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
+                    if(error){
+                        this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
+                            if(resError){
+                                return callback(resError)
+                            } else {
+                                return callback(error)
+                            }
+                        })
+                    } else {
+                        torrent.address = data.address
+                        torrent.seq = data.seq
+                        torrent.active = data.active
+                        torrent.site = data.magnet
+                        return callback(null, {torrent, data})
+                    }
                 })
-            }
-        })
+            })
+        }
+        // try {
+        //     folder = {main: path.resolve(folder).split(path.sep).filter(Boolean)}
+        //     folder.old = folder.main.pop()
+        //     folder.new = keypair.address
+        //     folder.main = folder.main.join(path.sep)
+        //     folder.old = path.resolve(folder.main + path.sep + folder.old)
+        //     folder.new = path.resolve(folder.main + path.sep + folder.new)
+        //     delete folder.main
+        // } catch (error) {
+        //     return callback(error)
+        // }
+        // fs.rename(folder.old, folder.new, error => {
+        //     if(error){
+        //         return callback(error)
+        //     } else {
+        //         this.webtorrent.seed(folder.new, {destroyStoreOnDestroy: true}, torrent => {
+        //             this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
+        //                 if(error){
+        //                     this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
+        //                         if(resError){
+        //                             return callback(resError)
+        //                         } else {
+        //                             return callback(error)
+        //                         }
+        //                     })
+        //                 } else {
+        //                     torrent.address = data.address
+        //                     torrent.seq = data.seq
+        //                     torrent.active = data.active
+        //                     torrent.site = data.magnet
+        //                     return callback(null, {torrent, data})
+        //                 }
+        //             })
+        //         })
+        //     }
+        // })
     }
     remove(address, callback){
         if(!callback){
             callback = function(){}
         }
-        this.webproperty.shred(this.webproperty.addressFromLink(address), (resError, resProp) => {
+        this.webproperty.shred(address, (resError, resProp) => {
             if(resError){
                 return callback(resError)
             } else {

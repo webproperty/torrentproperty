@@ -30,22 +30,7 @@ class TorrentProperty extends EventEmitter {
         if(!fs.existsSync(this.storage)){
             fs.mkdirSync(this.storage, {recursive: true})
         }
-        this.folders = (() => {
-            fs.readdir(this.storage, {withFileTypes: true}, (error, data) => {
-                if(error){
-                    this.emit('error', error)
-                    return []
-                } else if(data){
-                    data = data.map(datas => {return {folderPath: path.resolve(this.storage + path.sep + datas), folderName: datas, address: datas}})
-                    return data
-                } else if(!data){
-                    this.emit('error', new Error('did not find storage folder'))
-                    return []
-                }
-            })
-        })()
-        this.readyToGo = true
-        this.max = opt.max
+        this.busyAndNotReady = false
         this.takeOutInActive = opt.takeOutInActive
         this.takeOutUnManaged = opt.takeOutUnManaged
         this.webtorrent = new WebTorrent({dht: {verify}})
@@ -103,62 +88,58 @@ class TorrentProperty extends EventEmitter {
     async startUp(){
         this.busyAndNotReady = true
         this.emit('checked', false)
-        if(fs.existsSync(this.storage)){
-            let props = this.webproperty.getAll(null)
-            let dirs = await new Promise((resolve, reject) => {
-                fs.readdir(this.storage, {withFileTypes: false}, (error, files) => {
-                    if(error){
-                        reject(null)
-                    } else if(files){
-                        resolve(files)
-                    } else {
-                        reject(null)
-                    }
-                })
-            })
-            let has = props.filter(data => {return dirs.includes(data.address)})
-            props = props.map(data => {return data.address})
-            let hasNot = dirs.filter(data => {return !props.includes(data)})
-            if(hasNot.length){
-                for(let i = 0;i < hasNot.length;i++){
-                    if(this.takeOutUnManaged){
-                        await new Promise((resolve, reject) => {
-                            fs.rm(path.resolve(this.storage + path.sep + '_' + hasNot[i]), {recursive: true, force: true}, error => {
-                                if(error){
-                                    reject(false)
-                                } else {
-                                    resolve(true)
-                                }
-                            })
-                        })
-                    } else {
-                        await new Promise((resolve) => {
-                            this.webtorrent.seed(path.resolve(this.storage + path.sep + '_' + hasNot[i]), {destroyStoreOnDestroy: true}, torrent => {
-                                torrent.address = '_' + hasNot[i]
-                                torrent.folder = path.resolve(this.storage + path.sep + '_' + hasNot[i])
-                                torrent.unmanaged = true
-                                resolve(torrent)
-                            })
-                        })
-                    }
+        let props = this.webproperty.getAll(null)
+        let dirs = await new Promise((resolve, reject) => {
+            fs.readdir(this.storage, {withFileTypes: false}, (error, files) => {
+                if(error){
+                    reject(null)
+                } else if(files){
+                    resolve(files)
+                } else {
+                    reject(null)
                 }
-            }
-            if(has.length){
-                for(let i = 0;i < has.length;i++){
+            })
+        })
+        let has = props.filter(data => {return dirs.includes(data.address)})
+        props = props.map(data => {return data.address})
+        let hasNot = dirs.filter(data => {return !props.includes(data)})
+        if(hasNot.length){
+            for(let i = 0;i < hasNot.length;i++){
+                if(this.takeOutUnManaged){
+                    await new Promise((resolve, reject) => {
+                        fs.rm(path.resolve(this.storage + path.sep + '_' + hasNot[i]), {recursive: true, force: true}, error => {
+                            if(error){
+                                reject(false)
+                            } else {
+                                resolve(true)
+                            }
+                        })
+                    })
+                } else {
                     await new Promise((resolve) => {
-                        this.webtorrent.seed(path.resolve(this.storage + path.sep + has[i].address), {destroyStoreOnDestroy: true}, torrent => {
-                            torrent.address = has[i].address
-                            torrent.seq = has[i].seq
-                            torrent.active = has[i].active
-                            torrent.own = has[i].own
-                            torrent.folder = path.resolve(this.storage + path.sep + has[i].address)
+                        this.webtorrent.seed(path.resolve(this.storage + path.sep + '_' + hasNot[i]), {destroyStoreOnDestroy: true}, torrent => {
+                            torrent.address = '_' + hasNot[i]
+                            torrent.folder = path.resolve(this.storage + path.sep + '_' + hasNot[i])
+                            torrent.unmanaged = true
                             resolve(torrent)
                         })
                     })
                 }
             }
-        } else {
-            fs.mkdirSync(this.storage, {recursive: true})
+        }
+        if(has.length){
+            for(let i = 0;i < has.length;i++){
+                await new Promise((resolve) => {
+                    this.webtorrent.seed(path.resolve(this.storage + path.sep + has[i].address), {destroyStoreOnDestroy: true}, torrent => {
+                        torrent.address = has[i].address
+                        torrent.seq = has[i].seq
+                        torrent.active = has[i].active
+                        torrent.own = has[i].own
+                        torrent.folder = path.resolve(this.storage + path.sep + has[i].address)
+                        resolve(torrent)
+                    })
+                })
+            }
         }
         this.emit('checked', true)
         this.busyAndNotReady = false
@@ -181,10 +162,62 @@ class TorrentProperty extends EventEmitter {
     }
 
     async keepThingsUpdated(){
-        if(this.takeOutUnManaged){
-            await this.removeUnManaged()
+        this.busyAndNotReady = true
+        this.emit('checked', false)
+        let props = this.webproperty.getAll(null)
+        let allTorrents = this.webtorrent.torrents.map(data => {return data.infoHash})
+        // let propz = props.map(data => {return data.infoHash})
+        // let dropTorrents = allTorrents.filter(data => {return !propz.includes(data)})
+        // let testTorrents = allTorrents.filter(data => {return propz.includes(data)})
+        let needTorrents = props.filter(data => {return !allTorrents.includes(data.infoHash)})
+        let updateTorrents = props.filter(data => {return allTorrents.includes(data.infoHash)})
+        // for(let i = 0;i < dropTorrents.length;i++){
+        //     await new Promise((resolve, reject) => {
+        //         this.webtorrent.remove(dropTorrents[i], {destroyStore: true}, error => {
+        //             if(error){
+        //                 this.emit('error', error)
+        //                 reject(false)
+        //             } else {
+        //                 resolve(true)
+        //             }
+        //         })
+        //     })
+        // }
+        for(let i = 0;i < needTorrents.length;i++){
+            await new Promise(resolve => {
+                this.webtorrent.add(needTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
+                    torrent.address = needTorrents[i].address
+                    torrent.seq = needTorrents[i].seq
+                    torrent.active = needTorrents[i].active
+                    torrent.site = needTorrents[i].magnet
+                    torrent.folder = path.resolve(this.storage + path.sep + needTorrents[i].address)
+                    resolve(torrent)
+                })
+            })
         }
-        setTimeout(() => {this.keepThingsUpdated().catch(error => {this.emit('error', error)})}, 3600000)
+        for(let i = 0;i < updateTorrents.length;i++){
+            let tempTorrent = this.webtorrent.get(updateTorrents[i].infoHash)
+            if(tempTorrent){
+                tempTorrent.address = updateTorrents[i].address
+                tempTorrent.seq = updateTorrents[i].seq
+                tempTorrent.active = updateTorrents[i].active
+                tempTorrent.site = updateTorrents[i].magnet
+                tempTorrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
+            } else {
+                await new Promise(resolve => {
+                    this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
+                        torrent.address = updateTorrents[i].address
+                        torrent.seq = updateTorrents[i].seq
+                        torrent.active = updateTorrents[i].active
+                        torrent.site = updateTorrents[i].magnet
+                        torrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
+                        resolve(torrent)
+                    })
+                })
+            }
+        }
+        this.emit('checked', true)
+        this.busyAndNotReady = false
     }
 
     load(address, manage, callback){
@@ -276,7 +309,7 @@ class TorrentProperty extends EventEmitter {
                             if(error){
                                 return callback(error)
                             } else {
-                                return callback(null, tempTorrent)
+                                return callback(null, {torrent: tempTorrent, data: resProp})
                             }
                         })
                     } else {
