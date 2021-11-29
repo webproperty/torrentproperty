@@ -19,7 +19,7 @@ class TorrentProperty {
                 opt.start = {clear: true, remove: true, share: true}
             }
             if(!opt.load){
-                opt.load = true
+                opt.load = false
             }
         }
         this.storage = opt.storage
