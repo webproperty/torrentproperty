@@ -8,12 +8,14 @@ class TorrentProperty extends EventEmitter {
     constructor(opt){
         super()
         if(!opt){
-            opt.storage = path.resolve(__dirname + '/folder')
+            opt = {}
+            opt.storage = path.resolve('./folder')
             opt.takeOutInActive = false
-            opt.max = 0
+            opt.start = {clear: true, share: true}
+            opt.load = false
         } else {
             if(!opt.storage){
-                opt.storage = path.resolve(__dirname + '/folder')
+                opt.storage = path.resolve('./folder')
             }
             if(!opt.takeOutInActive){
                 opt.takeOutInActive = false
@@ -21,8 +23,11 @@ class TorrentProperty extends EventEmitter {
             if(!opt.takeOutUnManaged){
                 opt.takeOutUnManaged = false
             }
-            if(!opt.max){
-                opt.max = 0
+            if(!opt.start){
+                opt.start = {clear: true, share: true}
+            }
+            if(!opt.load){
+                opt.load = false
             }
         }
         // this.redo = []
@@ -30,64 +35,53 @@ class TorrentProperty extends EventEmitter {
         if(!fs.existsSync(this.storage)){
             fs.mkdirSync(this.storage, {recursive: true})
         }
+        this.atStart = opt.start
+        this.atLoad = opt.load
         this.busyAndNotReady = false
         this.takeOutInActive = opt.takeOutInActive
         this.takeOutUnManaged = opt.takeOutUnManaged
         this.webtorrent = new WebTorrent({dht: {verify}})
         this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive})
-        this.startUp().catch(error => {
-            this.emit('error', error)
-        })
+        this.start = true
         this.webtorrent.on('error', error => {
             this.emit('error', error)
         })
         this.webproperty.on('error', error => {
             this.emit('error', error)
         })
-        this.webproperty.on('update', data => {
-            let tempData = null
-            for(let i = 0;i < this.folders.length;i++){
-                if(this.folders[i].address === data.address){
-                    tempData = this.folders[i]
-                    break
-                }
-            }
-            if(tempData){
-                tempData.infoHash = data.new.infoHash
-                tempData.seq = data.new.seq
-                this.emit('updated', 'data was updated')
-            } else {
-                this.emit('error', new Error('could not find data to update'))
-            }
-        })
-        if(this.takeOutInActive){
-            this.webproperty.on('inactive', data => {
-                this.webtorrent.remove(data.infoHash, {destroyStore: true}, error => {
-                    if(error){
-                        this.emit('error', error)
-                        console.log(error)
-                        // this.redo.push(data.infoHash)
-                    } else {
-                        this.emit('deactivated', data)
-                    }
-                })
-            })
-        }
         this.webproperty.on('check', data => {
             if(data){
-                this.startTheUpdate(this.webproperty.properties.map(data => {return {address: data.address, seq: data.seq, infoHash: data.infoHash, active: data.active}}))
+                if(this.start){
+                    this.startUp().catch(error => {
+                        this.emit('error', error)
+                })
+                this.start = false
+            } else {
+                this.keepThingsUpdated().catch(error => {
+                    this.emit('error', error)
+                })
             }
-            this.emit('checked', data)
-        })
-        
-        this.keepThingsUpdated().catch(error => {
-            this.emit('error', error)
-        })
-    }
+        }
+        this.emit('checked', data)
+    })
+}
 
     async startUp(){
         this.busyAndNotReady = true
         this.emit('checked', false)
+        if(this.atStart.clear){
+            for(let i = 0;i < this.webtorrent.torrents.length;i++){
+                await new Promise((resolve, reject) => {
+                    this.webtorrent.remove(this.webtorrent.torrents[i].infoHash, {destroyStore: true}, error => {
+                        if(error){
+                            reject(false)
+                        } else {
+                            resolve(true)
+                        }
+                    })
+                })
+            }
+        }
         let props = this.webproperty.getAll(null)
         let dirs = await new Promise((resolve, reject) => {
             fs.readdir(this.storage, {withFileTypes: false}, (error, files) => {
@@ -101,29 +95,31 @@ class TorrentProperty extends EventEmitter {
             })
         })
         let has = props.filter(data => {return dirs.includes(data.address)})
-        props = props.map(data => {return data.address})
-        let hasNot = dirs.filter(data => {return !props.includes(data)})
-        if(hasNot.length){
-            for(let i = 0;i < hasNot.length;i++){
-                if(this.takeOutUnManaged){
-                    await new Promise((resolve, reject) => {
-                        fs.rm(path.resolve(this.storage + path.sep + '_' + hasNot[i]), {recursive: true, force: true}, error => {
-                            if(error){
-                                reject(false)
-                            } else {
-                                resolve(true)
-                            }
+        if(this.atStart.clear || this.atStart.share){
+            props = props.map(data => {return data.address})
+            let hasNot = dirs.filter(data => {return !props.includes(data)})
+            if(hasNot.length){
+                for(let i = 0;i < hasNot.length;i++){
+                    if(this.atStart.clear){
+                        await new Promise((resolve, reject) => {
+                            fs.rm(path.resolve(this.storage + path.sep + hasNot[i]), {recursive: true, force: true}, error => {
+                                if(error){
+                                    reject(false)
+                                } else {
+                                    resolve(true)
+                                }
+                            })
                         })
-                    })
-                } else {
-                    await new Promise((resolve) => {
-                        this.webtorrent.seed(path.resolve(this.storage + path.sep + '_' + hasNot[i]), {destroyStoreOnDestroy: true}, torrent => {
-                            torrent.address = '_' + hasNot[i]
-                            torrent.folder = path.resolve(this.storage + path.sep + '_' + hasNot[i])
-                            torrent.unmanaged = true
-                            resolve(torrent)
+                    }
+                    if(this.atStart.share){
+                        await new Promise((resolve) => {
+                            this.webtorrent.seed(path.resolve(this.storage + path.sep + hasNot[i]), {destroyStoreOnDestroy: true}, torrent => {
+                                torrent.address = hasNot[i]
+                                torrent.managed = false
+                                resolve(torrent)
+                            })
                         })
-                    })
+                    }
                 }
             }
         }
@@ -134,8 +130,8 @@ class TorrentProperty extends EventEmitter {
                         torrent.address = has[i].address
                         torrent.seq = has[i].seq
                         torrent.active = has[i].active
-                        torrent.own = has[i].own
-                        torrent.folder = path.resolve(this.storage + path.sep + has[i].address)
+                        torrent.signed = has[i].signed
+                        torrent.managed = true
                         resolve(torrent)
                     })
                 })
@@ -190,7 +186,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = needTorrents[i].seq
                     torrent.active = needTorrents[i].active
                     torrent.site = needTorrents[i].magnet
-                    torrent.folder = path.resolve(this.storage + path.sep + needTorrents[i].address)
+                    torrent.managed = true
                     resolve(torrent)
                 })
             })
@@ -202,7 +198,7 @@ class TorrentProperty extends EventEmitter {
                 tempTorrent.seq = updateTorrents[i].seq
                 tempTorrent.active = updateTorrents[i].active
                 tempTorrent.site = updateTorrents[i].magnet
-                tempTorrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
+                torrent.managed = true
             } else {
                 await new Promise(resolve => {
                     this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
@@ -210,7 +206,7 @@ class TorrentProperty extends EventEmitter {
                         torrent.seq = updateTorrents[i].seq
                         torrent.active = updateTorrents[i].active
                         torrent.site = updateTorrents[i].magnet
-                        torrent.folder = path.resolve(this.storage + path.sep + updateTorrents[i].address)
+                        torrent.managed = true
                         resolve(torrent)
                     })
                 })
@@ -224,6 +220,14 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = function(){}
         }
+
+        if(this.atLoad){
+            let tempTorrents = this.webtorrent.torrents.filter(data => {return data.managed})
+            for(let i = 0;i < tempTorrents.length;i++){
+                this.webtorrent.remove(tempTorrents[i].infoHash, {destroyStore: true})
+            }
+        }
+
         this.webproperty.resolve(address, manage, (error, data) => {
             if(error){
                 return callback(error)
@@ -232,8 +236,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.address = data.address
                     torrent.seq = data.seq
                     torrent.active = data.active
-                    torrent.own = data.own
-                    torrent.folder = path.resolve(this.storage + path.sep + data.address)
+                    torrent.signed = data.signed
                     torrent.site = data.magnet
                     torrent.managed = manage
                     return callback(null, {torrent, data})
@@ -283,8 +286,7 @@ class TorrentProperty extends EventEmitter {
                             torrent.address = data.address
                             torrent.seq = data.seq
                             torrent.active = data.active
-                            torrent.own = data.own
-                            torrent.folder = folder.new
+                            torrent.signed = data.signed
                             torrent.site = data.magnet
                             torrent.managed = manage
                             return callback(null, {torrent, data})
