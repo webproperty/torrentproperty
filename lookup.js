@@ -138,6 +138,9 @@ class TorrentProperty {
                 this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.address
                     torrent.seq = data.seq
+                    torrent.active = data.active
+                    torrent.magnet = data.magnet
+                    torrent.signed = data.signed
                     return callback(null, torrent)
                 })
             }

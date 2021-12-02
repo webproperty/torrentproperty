@@ -97,7 +97,8 @@ class TorrentProperty extends EventEmitter {
                         torrent.address = props[i].address
                         torrent.seq = props[i].seq
                         torrent.active = props[i].active
-                        torrent.site = props[i].magnet
+                        torrent.magnet = props[i].magnet
+                        torrent.signed = props[i].signed
                         resolve(torrent)
                     })
                 })
@@ -135,7 +136,8 @@ class TorrentProperty extends EventEmitter {
                     torrent.address = needTorrents[i].address
                     torrent.seq = needTorrents[i].seq
                     torrent.active = needTorrents[i].active
-                    torrent.site = needTorrents[i].magnet
+                    torrent.magnet = needTorrents[i].magnet
+                    torrent.signed = needTorrents[i].signed
                     resolve(torrent)
                 })
             })
@@ -146,14 +148,16 @@ class TorrentProperty extends EventEmitter {
                 tempTorrent.address = updateTorrents[i].address
                 tempTorrent.seq = updateTorrents[i].seq
                 tempTorrent.active = updateTorrents[i].active
-                tempTorrent.site = updateTorrents[i].magnet
+                tempTorrent.magnet = updateTorrents[i].magnet
+                tempTorrent.signed = updateTorrents[i].signed
             } else {
                 await new Promise(resolve => {
                     this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                         torrent.address = updateTorrents[i].address
                         torrent.seq = updateTorrents[i].seq
                         torrent.active = updateTorrents[i].active
-                        torrent.site = updateTorrents[i].magnet
+                        torrent.magnet = updateTorrents[i].magnet
+                        torrent.signed = updateTorrents[i].signed
                         resolve(torrent)
                     })
                 })
@@ -191,7 +195,8 @@ class TorrentProperty extends EventEmitter {
                     torrent.address = data.address
                     torrent.seq = data.seq
                     torrent.active = data.active
-                    torrent.site = data.magnet
+                    torrent.magnet = data.magnet
+                    torrent.signed = data.signed
                     return callback(null, {torrent, data})
                 })
             }
@@ -245,7 +250,8 @@ class TorrentProperty extends EventEmitter {
                                         torrent.address = data.address
                                         torrent.seq = data.seq
                                         torrent.active = data.active
-                                        torrent.site = data.magnet
+                                        torrent.magnet = data.magnet
+                                        torrent.signed = data.signed
                                         return callback(null, {torrent, data})
                                     }
                                 })
@@ -267,7 +273,8 @@ class TorrentProperty extends EventEmitter {
                                 torrent.address = data.address
                                 torrent.seq = data.seq
                                 torrent.active = data.active
-                                torrent.site = data.magnet
+                                torrent.magnet = data.magnet
+                                torrent.signed = data.signed
                                 return callback(null, {torrent, data})
                             }
                         })
