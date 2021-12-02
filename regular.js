@@ -131,7 +131,7 @@ class TorrentProperty extends EventEmitter {
                         torrent.seq = has[i].seq
                         torrent.active = has[i].active
                         torrent.signed = has[i].signed
-                        torrent.magnet = has[i].magnet
+                        torrent.magnetLink = has[i].magnet
                         torrent.managed = true
                         resolve(torrent)
                     })
@@ -186,7 +186,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.address = needTorrents[i].address
                     torrent.seq = needTorrents[i].seq
                     torrent.active = needTorrents[i].active
-                    torrent.magnet = needTorrents[i].magnet
+                    torrent.magnetLink = needTorrents[i].magnet
                     torrent.signed = needTorrents[i].signed
                     torrent.managed = true
                     resolve(torrent)
@@ -199,7 +199,7 @@ class TorrentProperty extends EventEmitter {
                 tempTorrent.address = updateTorrents[i].address
                 tempTorrent.seq = updateTorrents[i].seq
                 tempTorrent.active = updateTorrents[i].active
-                tempTorrent.magnet = updateTorrents[i].magnet
+                tempTorrent.magnetLink = updateTorrents[i].magnet
                 tempTorrent.signed = updateTorrents[i].signed
                 tempTorrent.managed = true
             } else {
@@ -208,7 +208,7 @@ class TorrentProperty extends EventEmitter {
                         torrent.address = updateTorrents[i].address
                         torrent.seq = updateTorrents[i].seq
                         torrent.active = updateTorrents[i].active
-                        torrent.magnet = updateTorrents[i].magnet
+                        torrent.magnetLink = updateTorrents[i].magnet
                         torrent.signed = updateTorrents[i].signed
                         torrent.managed = true
                         resolve(torrent)
@@ -241,7 +241,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.seq = data.seq
                     torrent.active = data.active
                     torrent.signed = data.signed
-                    torrent.magnet = data.magnet
+                    torrent.magnetLink = data.magnet
                     torrent.managed = manage
                     return callback(null, {torrent, data})
                 })
@@ -291,7 +291,7 @@ class TorrentProperty extends EventEmitter {
                             torrent.seq = data.seq
                             torrent.active = data.active
                             torrent.signed = data.signed
-                            torrent.magnet = data.magnet
+                            torrent.magnetLink = data.magnet
                             torrent.managed = manage
                             return callback(null, {torrent, data})
                         }

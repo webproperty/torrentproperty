@@ -139,7 +139,7 @@ class TorrentProperty {
                     torrent.address = data.address
                     torrent.seq = data.seq
                     torrent.active = data.active
-                    torrent.magnet = data.magnet
+                    torrent.magnetLink = data.magnet
                     torrent.signed = data.signed
                     return callback(null, torrent)
                 })

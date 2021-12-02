@@ -97,7 +97,7 @@ class TorrentProperty extends EventEmitter {
                         torrent.address = props[i].address
                         torrent.seq = props[i].seq
                         torrent.active = props[i].active
-                        torrent.magnet = props[i].magnet
+                        torrent.magnetLink = props[i].magnet
                         torrent.signed = props[i].signed
                         resolve(torrent)
                     })
@@ -136,7 +136,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.address = needTorrents[i].address
                     torrent.seq = needTorrents[i].seq
                     torrent.active = needTorrents[i].active
-                    torrent.magnet = needTorrents[i].magnet
+                    torrent.magnetLink = needTorrents[i].magnet
                     torrent.signed = needTorrents[i].signed
                     resolve(torrent)
                 })
@@ -148,7 +148,7 @@ class TorrentProperty extends EventEmitter {
                 tempTorrent.address = updateTorrents[i].address
                 tempTorrent.seq = updateTorrents[i].seq
                 tempTorrent.active = updateTorrents[i].active
-                tempTorrent.magnet = updateTorrents[i].magnet
+                tempTorrent.magnetLink = updateTorrents[i].magnet
                 tempTorrent.signed = updateTorrents[i].signed
             } else {
                 await new Promise(resolve => {
@@ -156,7 +156,7 @@ class TorrentProperty extends EventEmitter {
                         torrent.address = updateTorrents[i].address
                         torrent.seq = updateTorrents[i].seq
                         torrent.active = updateTorrents[i].active
-                        torrent.magnet = updateTorrents[i].magnet
+                        torrent.magnetLink = updateTorrents[i].magnet
                         torrent.signed = updateTorrents[i].signed
                         resolve(torrent)
                     })
@@ -195,7 +195,7 @@ class TorrentProperty extends EventEmitter {
                     torrent.address = data.address
                     torrent.seq = data.seq
                     torrent.active = data.active
-                    torrent.magnet = data.magnet
+                    torrent.magnetLink = data.magnet
                     torrent.signed = data.signed
                     return callback(null, {torrent, data})
                 })
@@ -250,7 +250,7 @@ class TorrentProperty extends EventEmitter {
                                         torrent.address = data.address
                                         torrent.seq = data.seq
                                         torrent.active = data.active
-                                        torrent.magnet = data.magnet
+                                        torrent.magnetLink = data.magnet
                                         torrent.signed = data.signed
                                         return callback(null, {torrent, data})
                                     }
@@ -273,7 +273,7 @@ class TorrentProperty extends EventEmitter {
                                 torrent.address = data.address
                                 torrent.seq = data.seq
                                 torrent.active = data.active
-                                torrent.magnet = data.magnet
+                                torrent.magnetLink = data.magnet
                                 torrent.signed = data.signed
                                 return callback(null, {torrent, data})
                             }
