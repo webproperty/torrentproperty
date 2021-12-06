@@ -13,6 +13,7 @@ class TorrentProperty extends EventEmitter {
             opt.takeOutInActive = false
             opt.start = {clear: true, share: true}
             opt.load = false
+            opt.check = false
         } else {
             if(!opt.storage){
                 opt.storage = path.resolve('./folder')
@@ -29,6 +30,9 @@ class TorrentProperty extends EventEmitter {
             if(!opt.load){
                 opt.load = false
             }
+            if(!opt.check){
+                opt.check = false
+            }
         }
         // this.redo = []
         this.storage = path.resolve(opt.storage)
@@ -38,10 +42,11 @@ class TorrentProperty extends EventEmitter {
         this.atStart = opt.start
         this.atLoad = opt.load
         this.busyAndNotReady = false
+        this.check = opt.check
         this.takeOutInActive = opt.takeOutInActive
         this.takeOutUnManaged = opt.takeOutUnManaged
         this.webtorrent = new WebTorrent({dht: {verify}})
-        this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive})
+        this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive, check: this.check})
         this.start = true
         this.webtorrent.on('error', error => {
             this.emit('error', error)
@@ -128,7 +133,7 @@ class TorrentProperty extends EventEmitter {
                 await new Promise((resolve) => {
                     this.webtorrent.seed(path.resolve(this.storage + path.sep + has[i].address), {destroyStoreOnDestroy: true}, torrent => {
                         torrent.address = has[i].address
-                        torrent.seq = has[i].seq
+                        torrent.sequence = has[i].sequence
                         torrent.active = has[i].active
                         torrent.signed = has[i].signed
                         torrent.magnetLink = has[i].magnet
@@ -150,7 +155,7 @@ class TorrentProperty extends EventEmitter {
                         this.emit('error', error)
                         reject(error)
                     } else {
-                        this.emit('dead', {address: tempTorrents[i].address, infoHash: tempTorrents[i].infoHash, seq: tempTorrents[i].seq})
+                        this.emit('dead', {address: tempTorrents[i].address, infoHash: tempTorrents[i].infoHash, sequence: tempTorrents[i].sequence})
                         resolve(tempTorrents[i])
                     }
                 })
@@ -184,7 +189,7 @@ class TorrentProperty extends EventEmitter {
             await new Promise(resolve => {
                 this.webtorrent.add(needTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = needTorrents[i].address
-                    torrent.seq = needTorrents[i].seq
+                    torrent.sequence = needTorrents[i].sequence
                     torrent.active = needTorrents[i].active
                     torrent.magnetLink = needTorrents[i].magnet
                     torrent.signed = needTorrents[i].signed
@@ -197,7 +202,7 @@ class TorrentProperty extends EventEmitter {
             let tempTorrent = this.webtorrent.get(updateTorrents[i].infoHash)
             if(tempTorrent){
                 tempTorrent.address = updateTorrents[i].address
-                tempTorrent.seq = updateTorrents[i].seq
+                tempTorrent.sequence = updateTorrents[i].sequence
                 tempTorrent.active = updateTorrents[i].active
                 tempTorrent.magnetLink = updateTorrents[i].magnet
                 tempTorrent.signed = updateTorrents[i].signed
@@ -206,7 +211,7 @@ class TorrentProperty extends EventEmitter {
                 await new Promise(resolve => {
                     this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                         torrent.address = updateTorrents[i].address
-                        torrent.seq = updateTorrents[i].seq
+                        torrent.sequence = updateTorrents[i].sequence
                         torrent.active = updateTorrents[i].active
                         torrent.magnetLink = updateTorrents[i].magnet
                         torrent.signed = updateTorrents[i].signed
@@ -238,7 +243,7 @@ class TorrentProperty extends EventEmitter {
             } else {
                 this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.address
-                    torrent.seq = data.seq
+                    torrent.sequence = data.sequence
                     torrent.active = data.active
                     torrent.signed = data.signed
                     torrent.magnetLink = data.magnet
@@ -248,7 +253,7 @@ class TorrentProperty extends EventEmitter {
             }
         })
     }
-    publish(folder, keypair, seq, manage, callback){
+    publish(folder, keypair, sequence, manage, callback){
         if(!callback){
             callback = function(){}
         }
@@ -277,7 +282,7 @@ class TorrentProperty extends EventEmitter {
                 return callback(error)
             } else {
                 this.webtorrent.seed(folder.new, {destroyStoreOnDestroy: true}, torrent => {
-                    this.webproperty.publish(keypair, torrent.infoHash, seq, manage, (error, data) => {
+                    this.webproperty.publish(keypair, torrent.infoHash, sequence, manage, (error, data) => {
                         if(error){
                             this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
                                 if(resError){
@@ -288,7 +293,7 @@ class TorrentProperty extends EventEmitter {
                             })
                         } else {
                             torrent.address = data.address
-                            torrent.seq = data.seq
+                            torrent.sequence = data.sequence
                             torrent.active = data.active
                             torrent.signed = data.signed
                             torrent.magnetLink = data.magnet

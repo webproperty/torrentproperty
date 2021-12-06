@@ -10,6 +10,7 @@ class TorrentProperty {
             opt.storage = path.resolve('./storage')
             opt.start = {clear: true, share: true}
             opt.load = false
+            opt.check = false
         } else {
             if(!opt.storage){
                 opt.storage = path.resolve('./storage')
@@ -20,6 +21,9 @@ class TorrentProperty {
             if(!opt.load){
                 opt.load = false
             }
+            if(!opt.check){
+                opt.check = false
+            }
         }
         this.storage = opt.storage
         if(!fs.existsSync(this.storage)){
@@ -27,8 +31,9 @@ class TorrentProperty {
         }
         this.atStart = opt.start
         this.atLoad = opt.load
+        this.check = opt.check
         this.webtorrent = new WebTorrent({dht: {verify}})
-        this.webproperty = new WebProperty({dht: this.webtorrent.dht})
+        this.webproperty = new WebProperty({dht: this.webtorrent.dht, check: this.check})
         this.webproperty.on('error', error => {
             console.log(error)
         })
@@ -137,7 +142,7 @@ class TorrentProperty {
             } else {
                 this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.address
-                    torrent.seq = data.seq
+                    torrent.sequence = data.sequence
                     torrent.active = data.active
                     torrent.magnetLink = data.magnet
                     torrent.signed = data.signed
@@ -146,7 +151,7 @@ class TorrentProperty {
             }
         })
     }
-    publish(keypair, infoHash, seq, callback){
+    publish(keypair, infoHash, sequence, callback){
         if(!callback){
             callback = () => {}
         }
@@ -156,7 +161,7 @@ class TorrentProperty {
         if(!infoHash){
             return callback(new Error('must have infohash'))
         }
-        this.webproperty.publish(keypair, infoHash, seq, (error, data) => {
+        this.webproperty.publish(keypair, infoHash, sequence, (error, data) => {
             if(error){
                 return callback(error)
             } else {

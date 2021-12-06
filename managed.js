@@ -10,12 +10,16 @@ class TorrentProperty extends EventEmitter {
         if(!opt){
             opt.storage = path.resolve('./folder')
             opt.takeOutInActive = false
+            opt.check = false
         } else {
             if(!opt.storage){
                 opt.storage = path.resolve('./folder')
             }
             if(!opt.takeOutInActive){
                 opt.takeOutInActive = false
+            }
+            if(!opt.check){
+                opt.check = false
             }
         }
         this.busyAndNotReady = false
@@ -24,8 +28,9 @@ class TorrentProperty extends EventEmitter {
             fs.mkdirSync(this.storage, {recursive: true})
         }
         this.takeOutInActive = opt.takeOutInActive
+        this.check = opt.check
         this.webtorrent = new WebTorrent({dht: {verify}})
-        this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive})
+        this.webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive: this.takeOutInActive, check: this.check})
         this.started = true
         this.webtorrent.on('error', error => {
             this.emit('error', error)
@@ -95,7 +100,7 @@ class TorrentProperty extends EventEmitter {
                 await new Promise((resolve) => {
                     this.webtorrent.add(props[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                         torrent.address = props[i].address
-                        torrent.seq = props[i].seq
+                        torrent.sequence = props[i].sequence
                         torrent.active = props[i].active
                         torrent.magnetLink = props[i].magnet
                         torrent.signed = props[i].signed
@@ -134,7 +139,7 @@ class TorrentProperty extends EventEmitter {
             await new Promise(resolve => {
                 this.webtorrent.add(needTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = needTorrents[i].address
-                    torrent.seq = needTorrents[i].seq
+                    torrent.sequence = needTorrents[i].sequence
                     torrent.active = needTorrents[i].active
                     torrent.magnetLink = needTorrents[i].magnet
                     torrent.signed = needTorrents[i].signed
@@ -146,7 +151,7 @@ class TorrentProperty extends EventEmitter {
             let tempTorrent = this.webtorrent.get(updateTorrents[i].infoHash)
             if(tempTorrent){
                 tempTorrent.address = updateTorrents[i].address
-                tempTorrent.seq = updateTorrents[i].seq
+                tempTorrent.sequence = updateTorrents[i].sequence
                 tempTorrent.active = updateTorrents[i].active
                 tempTorrent.magnetLink = updateTorrents[i].magnet
                 tempTorrent.signed = updateTorrents[i].signed
@@ -154,7 +159,7 @@ class TorrentProperty extends EventEmitter {
                 await new Promise(resolve => {
                     this.webtorrent.add(updateTorrents[i].infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                         torrent.address = updateTorrents[i].address
-                        torrent.seq = updateTorrents[i].seq
+                        torrent.sequence = updateTorrents[i].sequence
                         torrent.active = updateTorrents[i].active
                         torrent.magnetLink = updateTorrents[i].magnet
                         torrent.signed = updateTorrents[i].signed
@@ -193,7 +198,7 @@ class TorrentProperty extends EventEmitter {
             } else {
                 this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: true}, torrent => {
                     torrent.address = data.address
-                    torrent.seq = data.seq
+                    torrent.sequence = data.sequence
                     torrent.active = data.active
                     torrent.magnetLink = data.magnet
                     torrent.signed = data.signed
@@ -202,7 +207,7 @@ class TorrentProperty extends EventEmitter {
             }
         })
     }
-    publish(folder, keypair, seq, callback){
+    publish(folder, keypair, sequence, callback){
         if(!callback){
             callback = function(){}
         }
@@ -237,7 +242,7 @@ class TorrentProperty extends EventEmitter {
                             return callback(remError)
                         } else {
                             this.webtorrent.seed(folder.new, {destroyStoreOnDestroy: true}, torrent => {
-                                this.webproperty.publish(keypair, torrent.infoHash, seq, (mainError, data) => {
+                                this.webproperty.publish(keypair, torrent.infoHash, sequence, (mainError, data) => {
                                     if(mainError){
                                         this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
                                             if(resError){
@@ -248,7 +253,7 @@ class TorrentProperty extends EventEmitter {
                                         })
                                     } else {
                                         torrent.address = data.address
-                                        torrent.seq = data.seq
+                                        torrent.sequence = data.sequence
                                         torrent.active = data.active
                                         torrent.magnetLink = data.magnet
                                         torrent.signed = data.signed
@@ -260,7 +265,7 @@ class TorrentProperty extends EventEmitter {
                     })
                 } else {
                     this.webtorrent.seed(folder.new, {destroyStoreOnDestroy: true}, torrent => {
-                        this.webproperty.publish(keypair, torrent.infoHash, seq, (error, data) => {
+                        this.webproperty.publish(keypair, torrent.infoHash, sequence, (error, data) => {
                             if(error){
                                 this.webtorrent.remove(torrent.infoHash, {destroyStore: true}, resError => {
                                     if(resError){
@@ -271,7 +276,7 @@ class TorrentProperty extends EventEmitter {
                                 })
                             } else {
                                 torrent.address = data.address
-                                torrent.seq = data.seq
+                                torrent.sequence = data.sequence
                                 torrent.active = data.active
                                 torrent.magnetLink = data.magnet
                                 torrent.signed = data.signed
