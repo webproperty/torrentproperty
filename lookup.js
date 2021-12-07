@@ -2,9 +2,11 @@ const WebTorrent = require('webtorrent')
 const {WebProperty, verify} = require('webproperty/lookup.js')
 const fs = require('fs')
 const path = require('path')
+const EventEmitter = require('events').EventEmitter
 
-class TorrentProperty {
+class TorrentProperty extends EventEmitter {
     constructor(opt){
+        super()
         if(!opt){
             opt = {}
             opt.storage = path.resolve('./storage')
@@ -35,13 +37,13 @@ class TorrentProperty {
         this.webtorrent = new WebTorrent({dht: {verify}})
         this.webproperty = new WebProperty({dht: this.webtorrent.dht, check: this.check})
         this.webproperty.on('error', error => {
-            console.log(error)
+            this.emit('error', error)
         })
         this.webtorrent.on('error', error => {
-            console.log(error)
+            this.emit('error', error)
         })
         this.start().catch(error => {
-            console.log(error)
+            this.emit('error', error)
         })
     }
     async start(){
