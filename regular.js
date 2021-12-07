@@ -476,10 +476,6 @@ class TorrentProperty extends EventEmitter {
                         this.emit('error', error)
                 })
                 start = false
-            } else {
-                keepThingsUpdated(this).catch(error => {
-                    this.emit('error', error)
-                })
             }
         }
             this.emit('checked', data)
