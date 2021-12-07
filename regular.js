@@ -273,7 +273,7 @@ class TorrentProperty extends EventEmitter {
                 }
             }
         })
-        webproperty.on('same', data => {
+        webproperty.on('current', data => {
             let tempTorrent = webtorrent.get(data.infoHash)
             if(tempTorrent){
                 new Promise((resolve) => {
