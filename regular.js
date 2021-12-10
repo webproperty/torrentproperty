@@ -410,7 +410,6 @@ class TorrentProperty extends EventEmitter {
                 opt.clean = false
             }
         }
-        // this.redo = []
         storage = path.resolve(opt.storage)
         atStart = opt.start
         atLoad = opt.load
@@ -457,7 +456,7 @@ load(address, manage, callback){
     if(atLoad){
         let tempTorrents = webtorrent.torrents.filter(data => {return !data.managed})
         for(let i = 0;i < tempTorrents.length;i++){
-            this.webtorrent.remove(tempTorrents[i].infoHash, {destroyStore: clean})
+            webtorrent.remove(tempTorrents[i].infoHash, {destroyStore: clean})
         }
     }
 

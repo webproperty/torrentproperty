@@ -339,20 +339,20 @@ class TorrentProperty extends EventEmitter {
         check = opt.check
         clean = opt.clean
         webtorrent = new WebTorrent({dht: {verify}})
-        webproperty = new WebProperty({dht: this.webtorrent.dht, takeOutInActive, check})
-        if(!fs.existsSync(this.storage)){
-            fs.mkdirSync(this.storage, {recursive: true})
+        webproperty = new WebProperty({dht: webtorrent.dht, takeOutInActive, check})
+        if(!fs.existsSync(storage)){
+            fs.mkdirSync(storage, {recursive: true})
         }
-        this.webtorrent.on('error', error => {
+        webtorrent.on('error', error => {
             this.emit('error', error)
         })
-        this.webproperty.on('error', error => {
+        webproperty.on('error', error => {
             this.emit('error', error)
         })
 
         mainHandle(this)
 
-        this.webproperty.on('check', data => {
+        webproperty.on('check', data => {
             this.emit('checked', {status: data, torrents: webtorrent.torrents.length, properties: webproperty.properties.length})
         })
     }
@@ -361,11 +361,11 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = function(){}
         }
-        this.webproperty.resolve(address, (error, data) => {
+        webproperty.resolve(address, (error, data) => {
             if(error){
                 return callback(error)
             } else {
-                this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: clean}, torrent => {
+                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
                     delete data.infoHash
                     for(let prop in data){
                         torrent[prop] = data[prop]
@@ -386,7 +386,7 @@ class TorrentProperty extends EventEmitter {
             return callback(new Error('must have folder'))
         }
         if((!keypair) || (!keypair.address || !keypair.secret)){
-            keypair = this.webproperty.createKeypair(null)
+            keypair = webproperty.createKeypair(null)
         }
         try {
             folder = {main: path.resolve(folder).split(path.sep).filter(Boolean)}
@@ -403,8 +403,8 @@ class TorrentProperty extends EventEmitter {
             if(error){
                 return callback(error)
             } else {
-                this.webtorrent.seed(folder.new, {destroyStoreOnDestroy: clean}, torrent => {
-                    this.webproperty.publish(keypair, torrent.infoHash, sequence, (mainError, data) => {
+                webtorrent.seed(folder.new, {destroyStoreOnDestroy: clean}, torrent => {
+                    webproperty.publish(keypair, torrent.infoHash, sequence, (mainError, data) => {
                         if(mainError){
                             return callback(mainError)
                         } else {
@@ -423,7 +423,7 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = function(){}
         }
-        this.webproperty.shred(address, (resError, resProp) => {
+        webproperty.shred(address, (resError, resProp) => {
             if(resError){
                 return callback(resError)
             } else {
@@ -436,7 +436,7 @@ class TorrentProperty extends EventEmitter {
                     // })
                 let tempTorrent = this.findTheTorrent(resProp.address)
                 if(tempTorrent){
-                    this.webtorrent.remove(tempTorrent.infoHash, {destroyStore: clean}, error => {
+                    webtorrent.remove(tempTorrent.infoHash, {destroyStore: clean}, error => {
                         if(error){
                             return callback(error)
                         } else {
@@ -451,9 +451,9 @@ class TorrentProperty extends EventEmitter {
     }
     findTheTorrent(address){
         let tempTorrent = null
-        for(let i = 0;i < this.webtorrent.torrents.length;i++){
-            if(this.webtorrent.torrents[i].address === address){
-                tempTorrent = this.webtorrent.torrents[i]
+        for(let i = 0;i < webtorrent.torrents.length;i++){
+            if(webtorrent.torrents[i].address === address){
+                tempTorrent = webtorrent.torrents[i]
                 break
             }
         }

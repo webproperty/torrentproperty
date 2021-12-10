@@ -86,14 +86,14 @@ class TorrentProperty extends EventEmitter {
         check = opt.check
         clean = opt.clean
         webtorrent = new WebTorrent({dht: {verify}})
-        webproperty = new WebProperty({dht: this.webtorrent.dht, check: this.check})
-        if(!fs.existsSync(this.storage)){
-            fs.mkdirSync(this.storage)
+        webproperty = new WebProperty({dht: webtorrent.dht, check: check})
+        if(!fs.existsSync(storage)){
+            fs.mkdirSync(storage)
         }
-        this.webproperty.on('error', error => {
+        webproperty.on('error', error => {
             this.emit('error', error)
         })
-        this.webtorrent.on('error', error => {
+        webtorrent.on('error', error => {
             this.emit('error', error)
         })
         startUp(this).catch(error => {
@@ -105,7 +105,7 @@ class TorrentProperty extends EventEmitter {
         if(!callback || typeof(callback) !== 'function'){
             callback = function(){}
         }
-        this.webproperty.current(address, (error, data) => {
+        webproperty.current(address, (error, data) => {
             if(error){
                 return callback(error)
             } else {
@@ -117,16 +117,16 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = () => {}
         }
-        if(this.atLoad){
-            for(let i = 0;i < this.webtorrent.torrents.length;i++){
-                this.webtorrent.remove(this.webtorrent.torrents[i].infoHash, {destroyStore: clean})
+        if(atLoad){
+            for(let i = 0;i < webtorrent.torrents.length;i++){
+                webtorrent.remove(webtorrent.torrents[i].infoHash, {destroyStore: clean})
             }
         }
-        this.webproperty.resolve(this.webproperty.addressFromLink(address), (error, data) => {
+        webproperty.resolve(webproperty.addressFromLink(address), (error, data) => {
             if(error){
                 return callback(error)
             } else {
-                this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: clean}, torrent => {
+                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
                     delete data.infoHash
                     for(let prop in data){
                         torrent[prop] = data[prop]
@@ -140,11 +140,11 @@ class TorrentProperty extends EventEmitter {
         if(!callback){
             callback = () => {}
         }
-        this.webproperty.resolve(this.webproperty.addressFromLink(address), (error, data) => {
+        webproperty.resolve(webproperty.addressFromLink(address), (error, data) => {
             if(error){
                 return callback(error)
             } else {
-                this.webtorrent.remove(data.infoHash, {destroyStore: clean}, error => {
+                webtorrent.remove(data.infoHash, {destroyStore: clean}, error => {
                     if(error){
                         return callback(error)
                     } else {
