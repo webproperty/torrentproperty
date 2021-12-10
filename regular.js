@@ -112,14 +112,14 @@ function mainHandle(self){
             //     for(let prop in data){
             //         tempTorrent[prop] = data[prop]
             //     }
-            //     // self.emit('updated', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
-            //     resolve({name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+            //     // self.emit('updated', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+            //     resolve({stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             // }).then(res => {self.emit('updated', res)}).catch(error => {self.emit('error', error)})
             delete data.infoHash
             for(let prop in data){
                 tempTorrent[prop] = data[prop]
             }
-            self.emit('updated', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+            self.emit('updated', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
         } else {
             // new Promise((resolve) => {
             //     webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
@@ -127,9 +127,9 @@ function mainHandle(self){
             //         for(let prop in data){
             //             torrent[prop] = data[prop]
             //         }
-            //         // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-            //         // self.emit('updated', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
-            //         resolve({name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+            //         // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+            //         // self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+            //         resolve({stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
             //     })
             // }).then(res => {self.emit('updated', res)}).catch(error => {self.emit('error', error)})
             webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
@@ -137,8 +137,8 @@ function mainHandle(self){
                 for(let prop in data){
                     torrent[prop] = data[prop]
                 }
-                // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                self.emit('updated', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
             })
         }
     })
@@ -173,14 +173,14 @@ function mainHandle(self){
             //     for(let prop in data){
             //         tempTorrent[prop] = data[prop]
             //     }
-            //     // self.emit('same', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
-            //     resolve({name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+            //     // self.emit('same', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+            //     resolve({stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             // }).then(res => {self.emit('same', res)}).catch(error => {self.emit('error', error)})
             delete data.infoHash
             for(let prop in data){
                 tempTorrent[prop] = data[prop]
             }
-            self.emit('same', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+            self.emit('same', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
         } else {
             // new Promise((resolve) => {
             //     webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
@@ -188,9 +188,9 @@ function mainHandle(self){
             //         for(let prop in data){
             //             torrent[prop] = data[prop]
             //         }
-            //         // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-            //         // self.emit('same', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
-            //         resolve({name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+            //         // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+            //         // self.emit('same', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+            //         resolve({stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
             //     })
             // }).then(res => {self.emit('same', res)}).catch(error => {self.emit('error', error)})
             webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
@@ -198,8 +198,8 @@ function mainHandle(self){
                 for(let prop in data){
                     torrent[prop] = data[prop]
                 }
-                // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                self.emit('same', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                self.emit('same', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
             })
         }
     })
@@ -235,14 +235,14 @@ function mainHandle(self){
                 //     for(let prop in data){
                 //         tempTorrent[prop] = data[prop]
                 //     }
-                //     self.emit('deactivated', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
-                //     resolve({name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+                //     self.emit('deactivated', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+                //     resolve({stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
                 // }).then(res => {self.emit('deactivated', res)}).catch(error => {self.emit('error', error)})
                 delete data.infoHash
                 for(let prop in data){
                     tempTorrent[prop] = data[prop]
                 }
-                self.emit('deactivated', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+                self.emit('deactivated', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             } else {
                 // new Promise((resolve) => {
                 //     webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
@@ -250,9 +250,9 @@ function mainHandle(self){
                 //         for(let prop in data){
                 //             torrent[prop] = data[prop]
                 //         }
-                //         // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                //         // self.emit('deactivated', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
-                //         resolve({name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                //         // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                //         // self.emit('deactivated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                //         resolve({stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
                 //     })
                 // }).then(res => {self.emit('deactivated', res)}).catch(error => {self.emit('error', error)})
                 webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
@@ -260,8 +260,8 @@ function mainHandle(self){
                     for(let prop in data){
                         torrent[prop] = data[prop]
                     }
-                    // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                    self.emit('deactivated', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                    self.emit('deactivated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
                 })
             }
         })
@@ -298,14 +298,14 @@ function mainHandle(self){
                 //     for(let prop in data){
                 //         tempTorrent[prop] = data[prop]
                 //     }
-                //     self.emit('frozen', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+                //     self.emit('frozen', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
                 //     resolve(tempTorrent)
                 // }).catch(error => {self.emit('error', error)})
                 delete data.infoHash
                 for(let prop in data){
                     tempTorrent[prop] = data[prop]
                 }
-                self.emit('frozen', {name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
+                self.emit('frozen', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             } else {
                 // new Promise((resolve) => {
                 //     webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
@@ -313,8 +313,8 @@ function mainHandle(self){
                 //         for(let prop in data){
                 //             torrent[prop] = data[prop]
                 //         }
-                //         // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                //         self.emit('frozen', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                //         // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                //         self.emit('frozen', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
                 //         resolve(torrent)
                 //     })
                 // }).catch(error => {self.emit('error', error)})
@@ -323,8 +323,8 @@ function mainHandle(self){
                     for(let prop in data){
                         torrent[prop] = data[prop]
                     }
-                    // let {name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                    self.emit('frozen', {name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                    self.emit('frozen', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
                 })
             }
         })

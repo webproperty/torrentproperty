@@ -127,31 +127,12 @@ class TorrentProperty extends EventEmitter {
                 return callback(error)
             } else {
                 this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: clean}, torrent => {
-                    torrent.address = data.address
-                    torrent.sequence = data.sequence
-                    torrent.active = data.active
-                    torrent.magnetLink = data.magnet
-                    torrent.signed = data.signed
+                    delete data.infoHash
+                    for(let prop in data){
+                        torrent[prop] = data[prop]
+                    }
                     return callback(null, torrent)
                 })
-            }
-        })
-    }
-    publish(keypair, infoHash, sequence, callback){
-        if(!callback){
-            callback = () => {}
-        }
-        if((!keypair) || (!keypair.address || !keypair.secret)){
-            keypair = this.webproperty.createKeypair(null)
-        }
-        if(!infoHash){
-            return callback(new Error('must have infohash'))
-        }
-        this.webproperty.publish(keypair, infoHash, sequence, (error, data) => {
-            if(error){
-                return callback(error)
-            } else {
-                callback(null, data)
             }
         })
     }
