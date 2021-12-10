@@ -466,12 +466,10 @@ load(address, manage, callback){
             return callback(error)
         } else {
             webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
-                torrent.address = data.address
-                torrent.sig = data.sig
-                torrent.sequence = data.sequence
-                torrent.active = data.active
-                torrent.signed = data.signed
-                torrent.magnet = data.magnet
+                delete data.infoHash
+                for(let prop in data){
+                    torrent[prop] = data[prop]
+                }
                 torrent.managed = manage
                 return callback(null, {torrent, data})
             })
@@ -511,12 +509,10 @@ publish(folder, keypair, sequence, manage, callback){
                     if(error){
                         return callback(error)
                     } else {
-                        torrent.address = data.address
-                        torrent.sig = data.sig
-                        torrent.sequence = data.sequence
-                        torrent.active = data.active
-                        torrent.signed = data.signed
-                        torrent.magnet = data.magnet
+                        delete data.infoHash
+                        for(let prop in data){
+                            torrent[prop] = data[prop]
+                        }
                         torrent.managed = manage
                         return callback(null, {torrent, data})
                     }

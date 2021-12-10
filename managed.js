@@ -366,12 +366,10 @@ class TorrentProperty extends EventEmitter {
                 return callback(error)
             } else {
                 this.webtorrent.add(data.infoHash, {path: this.storage, destroyStoreOnDestroy: clean}, torrent => {
-                    torrent.address = data.address
-                    torrent.sig = data.sig
-                    torrent.sequence = data.sequence
-                    torrent.active = data.active
-                    torrent.magnet = data.magnet
-                    torrent.signed = data.signed
+                    delete data.infoHash
+                    for(let prop in data){
+                        torrent[prop] = data[prop]
+                    }
                     return callback(null, {torrent, data})
                 })
             }
@@ -410,12 +408,10 @@ class TorrentProperty extends EventEmitter {
                         if(mainError){
                             return callback(mainError)
                         } else {
-                            torrent.address = data.address
-                            torrent.sig = data.sig
-                            torrent.sequence = data.sequence
-                            torrent.active = data.active
-                            torrent.magnet = data.magnet
-                            torrent.signed = data.signed
+                            delete data.infoHash
+                            for(let prop in data){
+                                torrent[prop] = data[prop]
+                            }
                             return callback(null, {torrent, data})
                         }
                     })
