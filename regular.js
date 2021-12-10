@@ -90,7 +90,7 @@ function mainHandle(self){
                 //         if(error){
                 //             reject(error)
                 //         } else {
-                //             resolve(data.prevInfoHash)
+                //             resolve(tempTorrent.address)
                 //         }
                 //     })
                 // }).then(res => {self.emit('removed', res)}).catch(error => {self.emit('error', error)})
@@ -98,7 +98,7 @@ function mainHandle(self){
                     if(error){
                         self.emit('error', error)
                     } else {
-                        self.emit('removed', data.prevInfoHash)
+                        self.emit('removed', tempTorrent.address)
                     }
                 })
             } else {
@@ -151,7 +151,7 @@ function mainHandle(self){
                 //         if(error){
                 //             reject(error)
                 //         } else {
-                //             resolve(data.prevInfoHash)
+                //             resolve(prevTorrent.address)
                 //         }
                 //     })
                 // }).then(res => {self.emit('same', res)}).catch(error => {self.emit('error', error)})
@@ -159,7 +159,7 @@ function mainHandle(self){
                     if(error){
                         self.emit('error', error)
                     } else {
-                        self.emit('removed',data.prevInfoHash)
+                        self.emit('removed',prevTorrent.address)
                     }
                 })
             } else {
@@ -213,7 +213,7 @@ function mainHandle(self){
                     //         if(error){
                     //             reject(error)
                     //         } else {
-                    //             resolve(data.prevInfoHash)
+                    //             resolve(prevTorrent.address)
                     //         }
                     //     })
                     // }).then(res => {self.emit('removed', res)}).catch(error => {self.emit('error', error)})
@@ -221,7 +221,7 @@ function mainHandle(self){
                         if(error){
                             self.emit('error', error)
                         } else {
-                            self.emit('removed',data.prevInfoHash)
+                            self.emit('removed',prevTorrent.address)
                         }
                     })
                 } else {
@@ -276,7 +276,7 @@ function mainHandle(self){
                     //         if(error){
                     //             reject(error)
                     //         } else {
-                    //             self.emit('removed', data.prevInfoHash)
+                    //             self.emit('removed', prevTorrent.address)
                     //         }
                     //     })
                     // }).catch(error => {self.emit('error', error)})
@@ -284,7 +284,7 @@ function mainHandle(self){
                         if(error){
                             self.emit('error', error)
                         } else {
-                            self.emit('removed', data.prevInfoHash)
+                            self.emit('removed', prevTorrent.address)
                         }
                     })
                 } else {
@@ -339,7 +339,7 @@ function mainHandle(self){
                     //         if(error){
                     //             reject(error)
                     //         } else {
-                    //             resolve(data.prevInfoHash)
+                    //             resolve(prevTorrent.address)
                     //         }
                     //     })
                     // }).then(res => {self.emit('removed', res)}).catch(error => {self.emit('error', error)})
@@ -347,7 +347,7 @@ function mainHandle(self){
                         if(error){
                             self.emit('error', error)
                         } else {
-                            self.emit('removed', data.prevInfoHash)
+                            self.emit('removed', prevTorrent.address)
                         }
                     })
                 } else {
@@ -361,7 +361,7 @@ function mainHandle(self){
                 //         if(error){
                 //             reject(error)
                 //         } else {
-                //             resolve(data.infoHash)
+                //             resolve(dataTorrent.address)
                 //         }
                 //     })
                 // }).then(res => {self.emit('removed', res)}).catch(error => {self.emit('error', error)})
@@ -369,7 +369,7 @@ function mainHandle(self){
                     if(error){
                         self.emit('error', error)
                     } else {
-                        self.emit('removed', data.infoHash)
+                        self.emit('removed', dataTorrent.address)
                     }
                 })
             } else {
