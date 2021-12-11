@@ -375,7 +375,7 @@ class TorrentProperty extends EventEmitter {
             }
         })
     }
-    publish(folder, keypair, sequence, callback){
+    publish(folder, keypair, sequence, stuff, callback){
         if(!callback){
             callback = function(){}
         }
@@ -404,7 +404,7 @@ class TorrentProperty extends EventEmitter {
                 return callback(error)
             } else {
                 webtorrent.seed(folder.new, {destroyStoreOnDestroy: clean}, torrent => {
-                    webproperty.publish(keypair, torrent.infoHash, sequence, (mainError, data) => {
+                    webproperty.publish(keypair, torrent.infoHash, sequence, stuff, (mainError, data) => {
                         if(mainError){
                             return callback(mainError)
                         } else {

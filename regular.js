@@ -475,7 +475,7 @@ load(address, manage, callback){
         }
     })
 }
-publish(folder, keypair, sequence, manage, callback){
+publish(folder, keypair, sequence, stuff, manage, callback){
     if(!callback){
         callback = function(){}
     }
@@ -504,7 +504,7 @@ publish(folder, keypair, sequence, manage, callback){
             return callback(error)
         } else {
             webtorrent.seed(folder.new, {destroyStoreOnDestroy: clean}, torrent => {
-                webproperty.publish(keypair, torrent.infoHash, sequence, manage, (error, data) => {
+                webproperty.publish(keypair, torrent.infoHash, sequence, stuff, manage, (error, data) => {
                     if(error){
                         return callback(error)
                     } else {
