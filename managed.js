@@ -315,6 +315,7 @@ class TorrentProperty extends EventEmitter {
     constructor(opt){
         super()
         if(!opt){
+            opt = {}
             opt.storage = path.resolve('./folder')
             opt.takeOutInActive = false
             opt.check = false
