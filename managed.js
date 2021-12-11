@@ -376,36 +376,24 @@ class TorrentProperty extends EventEmitter {
             }
         })
     }
-    publish(folder, keypair, sequence, stuff, callback){
+    publish(folder, keypair, sequence, callback){
         if(!callback){
             callback = function(){}
         }
-        // if((!folder || typeof(folder) !== 'string') || (!folder.includes('/') && !folder.includes('\\')) || path.resolve(folder).split(path.sep).length < 2){
-        //     return callback(new Error('must have folder'))
-        // }
         if((!folder || typeof(folder) !== 'string') || (!folder.includes('/') && !folder.includes('\\'))){
             return callback(new Error('must have folder'))
+        } else {
+            folder = path.resolve(folder)
         }
         if((!keypair) || (!keypair.address || !keypair.secret)){
             keypair = webproperty.createKeypair(null)
         }
-        try {
-            folder = {main: path.resolve(folder).split(path.sep).filter(Boolean)}
-            folder.old = folder.main.pop()
-            folder.new = keypair.address
-            folder.main = folder.main.join(path.sep)
-            folder.old = path.resolve(folder.main + path.sep + folder.old)
-            folder.new = path.resolve(folder.main + path.sep + folder.new)
-            delete folder.main
-        } catch (error) {
-            return callback(error)
-        }
-        fs.rename(folder.old, folder.new, error => {
+        fs.access(folder, fs.constants.F_OK, error => {
             if(error){
                 return callback(error)
             } else {
-                webtorrent.seed(folder.new, {destroyStoreOnDestroy: clean}, torrent => {
-                    webproperty.publish(keypair, torrent.infoHash, sequence, stuff, (mainError, data) => {
+                webtorrent.seed(folder, {destroyStoreOnDestroy: clean}, torrent => {
+                    webproperty.publish(keypair, {ih: torrent.infoHash}, sequence, (mainError, data) => {
                         if(mainError){
                             return callback(mainError)
                         } else {

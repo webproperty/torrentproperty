@@ -475,7 +475,7 @@ load(address, manage, callback){
         }
     })
 }
-publish(folder, keypair, sequence, stuff, manage, callback){
+publish(folder, keypair, sequence, manage, callback){
     if(!callback){
         callback = function(){}
     }
@@ -484,27 +484,18 @@ publish(folder, keypair, sequence, stuff, manage, callback){
     // }
     if((!folder || typeof(folder) !== 'string') || (!folder.includes('/') && !folder.includes('\\'))){
         return callback(new Error('must have folder'))
+    } else {
+        folder = path.resolve(folder)
     }
     if((!keypair) || (!keypair.address || !keypair.secret)){
         keypair = webproperty.createKeypair(null)
     }
-    try {
-        folder = {main: path.resolve(folder).split(path.sep).filter(Boolean)}
-        folder.old = folder.main.pop()
-        folder.new = keypair.address
-        folder.main = folder.main.join(path.sep)
-        folder.old = path.resolve(folder.main + path.sep + folder.old)
-        folder.new = path.resolve(folder.main + path.sep + folder.new)
-        delete folder.main
-    } catch (error) {
-        return callback(error)
-    }
-    fs.rename(folder.old, folder.new, error => {
+    fs.access(folder, fs.constants.F_OK, error => {
         if(error){
             return callback(error)
         } else {
             webtorrent.seed(folder.new, {destroyStoreOnDestroy: clean}, torrent => {
-                webproperty.publish(keypair, torrent.infoHash, sequence, stuff, manage, (error, data) => {
+                webproperty.publish(keypair, {ih: torrent.infoHash}, sequence, manage, (error, data) => {
                     if(error){
                         return callback(error)
                     } else {
