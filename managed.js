@@ -433,7 +433,7 @@ class TorrentProperty extends EventEmitter {
             }
         })
     }
-    publish(folder, keypair, sequence, callback){
+    publish(folder, keypair, sequence, stuff, callback){
         if(!callback){
             callback = function(){}
         }
@@ -445,12 +445,15 @@ class TorrentProperty extends EventEmitter {
         if((!keypair) || (!keypair.address || !keypair.secret)){
             keypair = webproperty.createKeypair()
         }
+        if(!stuff || typeof(stuff) !== 'object' || Array.isArray(stuff)){
+            stuff = {}
+        }
         fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
             if(error){
                 return callback(error)
             } else {
                 webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
-                    webproperty.publish(keypair, {ih: torrent.infoHash}, sequence, (mainError, data) => {
+                    webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, (mainError, data) => {
                         if(mainError){
                             return callback(mainError)
                         } else {

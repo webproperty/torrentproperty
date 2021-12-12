@@ -532,7 +532,7 @@ load(address, manage, callback){
         }
     })
 }
-publish(folder, keypair, sequence, manage, callback){
+publish(folder, keypair, sequence, stuff, manage, callback){
     if(!callback){
         callback = function(){}
     }
@@ -547,12 +547,15 @@ publish(folder, keypair, sequence, manage, callback){
     if((!keypair) || (!keypair.address || !keypair.secret)){
         keypair = webproperty.createKeypair()
     }
+    if(!stuff || typeof(stuff) !== 'object' || Array.isArray(stuff)){
+        stuff = {}
+    }
     fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
         if(error){
             return callback(error)
         } else {
             webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
-                webproperty.publish(keypair, {ih: torrent.infoHash}, sequence, manage, (error, data) => {
+                webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, manage, (error, data) => {
                     if(error){
                         return callback(error)
                     } else {
