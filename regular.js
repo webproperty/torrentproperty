@@ -132,14 +132,25 @@ function mainHandle(self){
             //         resolve({stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
             //     })
             // }).then(res => {self.emit('updated', res)}).catch(error => {self.emit('error', error)})
-            webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
-                delete data.infoHash
-                for(let prop in data){
-                    torrent[prop] = data[prop]
-                }
-                // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
-            })
+            if(data.signed){
+                webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                    delete data.infoHash
+                    for(let prop in data){
+                        torrent[prop] = data[prop]
+                    }
+                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                    self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                })
+            } else {
+                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                    delete data.infoHash
+                    for(let prop in data){
+                        torrent[prop] = data[prop]
+                    }
+                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                    self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                })
+            }
         }
     })
     webproperty.on('current', data => {
@@ -193,14 +204,25 @@ function mainHandle(self){
             //         resolve({stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
             //     })
             // }).then(res => {self.emit('same', res)}).catch(error => {self.emit('error', error)})
-            webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
-                delete data.infoHash
-                for(let prop in data){
-                    torrent[prop] = data[prop]
-                }
-                // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                self.emit('same', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
-            })
+            if(data.signed){
+                webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                    delete data.infoHash
+                    for(let prop in data){
+                        torrent[prop] = data[prop]
+                    }
+                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                    self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                })
+            } else {
+                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                    delete data.infoHash
+                    for(let prop in data){
+                        torrent[prop] = data[prop]
+                    }
+                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                    self.emit('same', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                })
+            }
         }
     })
     if(!takeOutInActive){
@@ -255,14 +277,25 @@ function mainHandle(self){
                 //         resolve({stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
                 //     })
                 // }).then(res => {self.emit('deactivated', res)}).catch(error => {self.emit('error', error)})
-                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
-                    delete data.infoHash
-                    for(let prop in data){
-                        torrent[prop] = data[prop]
-                    }
-                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                    self.emit('deactivated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
-                })
+                if(data.signed){
+                    webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                        delete data.infoHash
+                        for(let prop in data){
+                            torrent[prop] = data[prop]
+                        }
+                        // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                        self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                    })
+                } else {
+                    webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                        delete data.infoHash
+                        for(let prop in data){
+                            torrent[prop] = data[prop]
+                        }
+                        // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                        self.emit('deactivated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                    })
+                }
             }
         })
     }
@@ -318,14 +351,25 @@ function mainHandle(self){
                 //         resolve(torrent)
                 //     })
                 // }).catch(error => {self.emit('error', error)})
-                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
-                    delete data.infoHash
-                    for(let prop in data){
-                        torrent[prop] = data[prop]
-                    }
-                    // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
-                    self.emit('frozen', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
-                })
+                if(data.signed){
+                    webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                        delete data.infoHash
+                        for(let prop in data){
+                            torrent[prop] = data[prop]
+                        }
+                        // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                        self.emit('updated', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                    })
+                } else {
+                    webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                        delete data.infoHash
+                        for(let prop in data){
+                            torrent[prop] = data[prop]
+                        }
+                        // let {stuff, name, path, magnet, address, infoHash, sequence, active, signed, sig} = torrent
+                        self.emit('frozen', {stuff: torrent.stuff, name: torrent.name, path: torrent.path, magnet: torrent.magnet, address: torrent.address, infoHash: torrent.infoHash, sequence: torrent.sequence, active: torrent.active, signed: torrent.signed, sig: torrent.sig})
+                    })
+                }
             }
         })
     }
@@ -488,13 +532,13 @@ publish(folder, keypair, sequence, manage, callback){
         folder = path.resolve(folder)
     }
     if((!keypair) || (!keypair.address || !keypair.secret)){
-        keypair = webproperty.createKeypair(null)
+        keypair = webproperty.createKeypair()
     }
-    fs.access(folder, fs.constants.F_OK, error => {
+    fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
         if(error){
             return callback(error)
         } else {
-            webtorrent.seed(folder.new, {destroyStoreOnDestroy: clean}, torrent => {
+            webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
                 webproperty.publish(keypair, {ih: torrent.infoHash}, sequence, manage, (error, data) => {
                     if(error){
                         return callback(error)
