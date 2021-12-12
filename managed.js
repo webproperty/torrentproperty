@@ -47,6 +47,7 @@ function mainHandle(self){
             //     // self.emit('updated', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             //     resolve({stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             // }).then(res => {self.emit('updated', res)}).catch(error => {self.emit('error', error)})
+            data.infohash = data.infoHash
             delete data.infoHash
             for(let prop in data){
                 tempTorrent[prop] = data[prop]
@@ -66,6 +67,7 @@ function mainHandle(self){
             // }).then(res => {self.emit('updated', res)}).catch(error => {self.emit('error', error)})
             if(data.signed){
                 webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                    data.infohash = data.infoHash
                     delete data.infoHash
                     for(let prop in data){
                         torrent[prop] = data[prop]
@@ -75,6 +77,7 @@ function mainHandle(self){
                 })
             } else {
                 webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                    data.infohash = data.infoHash
                     delete data.infoHash
                     for(let prop in data){
                         torrent[prop] = data[prop]
@@ -119,6 +122,7 @@ function mainHandle(self){
             //     // self.emit('same', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             //     resolve({stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
             // }).then(res => {self.emit('same', res)}).catch(error => {self.emit('error', error)})
+            data.infohash = data.infoHash
             delete data.infoHash
             for(let prop in data){
                 tempTorrent[prop] = data[prop]
@@ -138,6 +142,7 @@ function mainHandle(self){
             // }).then(res => {self.emit('same', res)}).catch(error => {self.emit('error', error)})
             if(data.signed){
                 webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                    data.infohash = data.infoHash
                     delete data.infoHash
                     for(let prop in data){
                         torrent[prop] = data[prop]
@@ -147,6 +152,7 @@ function mainHandle(self){
                 })
             } else {
                 webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                    data.infohash = data.infoHash
                     delete data.infoHash
                     for(let prop in data){
                         torrent[prop] = data[prop]
@@ -192,6 +198,7 @@ function mainHandle(self){
                 //     self.emit('deactivated', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
                 //     resolve({stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
                 // }).then(res => {self.emit('deactivated', res)}).catch(error => {self.emit('error', error)})
+                data.infohash = data.infoHash
                 delete data.infoHash
                 for(let prop in data){
                     tempTorrent[prop] = data[prop]
@@ -211,6 +218,7 @@ function mainHandle(self){
                 // }).then(res => {self.emit('deactivated', res)}).catch(error => {self.emit('error', error)})
                 if(data.signed){
                     webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                        data.infohash = data.infoHash
                         delete data.infoHash
                         for(let prop in data){
                             torrent[prop] = data[prop]
@@ -220,6 +228,7 @@ function mainHandle(self){
                     })
                 } else {
                     webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                        data.infohash = data.infoHash
                         delete data.infoHash
                         for(let prop in data){
                             torrent[prop] = data[prop]
@@ -266,6 +275,7 @@ function mainHandle(self){
                 //     self.emit('frozen', {stuff: tempTorrent.stuff, name: tempTorrent.name, path: tempTorrent.path, magnet: tempTorrent.magnet, address: tempTorrent.address, infoHash: tempTorrent.infoHash, sequence: tempTorrent.sequence, active: tempTorrent.active, signed: tempTorrent.signed, sig: tempTorrent.sig})
                 //     resolve(tempTorrent)
                 // }).catch(error => {self.emit('error', error)})
+                data.infohash = data.infoHash
                 delete data.infoHash
                 for(let prop in data){
                     tempTorrent[prop] = data[prop]
@@ -285,6 +295,7 @@ function mainHandle(self){
                 // }).catch(error => {self.emit('error', error)})
                 if(data.signed){
                     webtorrent.seed(storage + path.sep + data.address, {destroyStoreOnDestroy: clean}, torrent => {
+                        data.infohash = data.infoHash
                         delete data.infoHash
                         for(let prop in data){
                             torrent[prop] = data[prop]
@@ -294,6 +305,7 @@ function mainHandle(self){
                     })
                 } else {
                     webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                        data.infohash = data.infoHash
                         delete data.infoHash
                         for(let prop in data){
                             torrent[prop] = data[prop]
@@ -411,6 +423,7 @@ class TorrentProperty extends EventEmitter {
                 return callback(error)
             } else {
                 webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                    data.infohash = data.infoHash
                     delete data.infoHash
                     for(let prop in data){
                         torrent[prop] = data[prop]
@@ -441,6 +454,7 @@ class TorrentProperty extends EventEmitter {
                         if(mainError){
                             return callback(mainError)
                         } else {
+                            data.infohash = data.infoHash
                             delete data.infoHash
                             for(let prop in data){
                                 torrent[prop] = data[prop]
