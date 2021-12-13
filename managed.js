@@ -1,6 +1,6 @@
 const WebTorrent = require('webtorrent')
 const {WebProperty, verify} = require('webproperty/managed.js')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
 const EventEmitter = require('events').EventEmitter
 
@@ -397,8 +397,8 @@ class TorrentProperty extends EventEmitter {
         clean = opt.clean
         webtorrent = new WebTorrent({dht: {verify}})
         webproperty = new WebProperty({dht: webtorrent.dht, takeOutInActive, check})
-        if(!fs.existsSync(storage)){
-            fs.mkdirSync(storage, {recursive: true})
+        if(!fs.pathExistsSync(storage)){
+            fs.ensureDirSync(storage)
         }
         webtorrent.on('error', error => {
             this.emit('error', error)
@@ -454,7 +454,7 @@ class TorrentProperty extends EventEmitter {
                 if(error){
                     return callback(error)
                 } else {
-                    fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
+                    fs.copy(folder, storage + path.sep + keypair.address, {overwrite: true}, error => {
                         if(error){
                             return callback(error)
                         } else {
@@ -477,7 +477,7 @@ class TorrentProperty extends EventEmitter {
                 }
             })
         } else {
-            fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
+            fs.copy(folder, storage + path.sep + keypair.address, {overwrite: true}, error => {
                 if(error){
                     return callback(error)
                 } else {
