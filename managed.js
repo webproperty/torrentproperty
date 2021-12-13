@@ -269,6 +269,10 @@ class TorrentProperty extends EventEmitter {
 
         mainHandle(this)
 
+        this.webproperty.on('extra', data => {
+            this.emit('more', data)
+        })
+
         this.webproperty.on('check', data => {
             this.emit('checked', {status: data, torrents: this.webtorrent.torrents.length, properties: this.webproperty.properties.length})
         })

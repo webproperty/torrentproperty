@@ -485,6 +485,10 @@ class TorrentProperty extends EventEmitter {
 
         mainHandle(this)
 
+        this.webproperty.on('extra', data => {
+            this.emit('more', data)
+        })
+
         this.webproperty.on('check', beforeFunc)
 
         let beforeFunc = (data) => {
