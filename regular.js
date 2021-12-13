@@ -520,15 +520,24 @@ load(address, manage, callback){
         if(error){
             return callback(error)
         } else {
-            webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+            let checkTorrent = this.findTheTorrent(address)
+            if(checkTorrent){
                 data.infohash = data.infoHash
                 delete data.infoHash
                 for(let prop in data){
-                    torrent[prop] = data[prop]
+                    checkTorrent[prop] = data[prop]
                 }
-                torrent.managed = manage
-                return callback(null, {torrent, data})
-            })
+                return callback(null, {torrent: checkTorrent, data})
+            } else {
+                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                    data.infohash = data.infoHash
+                    delete data.infoHash
+                    for(let prop in data){
+                        torrent[prop] = data[prop]
+                    }
+                    return callback(null, {torrent, data})
+                })
+            }
         }
     })
 }

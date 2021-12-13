@@ -422,14 +422,32 @@ class TorrentProperty extends EventEmitter {
             if(error){
                 return callback(error)
             } else {
-                webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
-                    data.infohash = data.infoHash
-                    delete data.infoHash
-                    for(let prop in data){
-                        torrent[prop] = data[prop]
-                    }
-                    return callback(null, {torrent, data})
-                })
+                let checkTorrent = this.findTheTorrent(address)
+                if(checkTorrent){
+                    webtorrent.remove(checkTorrent.infoHash, {destroyStore: true}, checkError => {
+                        if(checkError){
+                            return callback(checkError)
+                        } else {
+                            webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                                data.infohash = data.infoHash
+                                delete data.infoHash
+                                for(let prop in data){
+                                    torrent[prop] = data[prop]
+                                }
+                                return callback(null, {torrent, data})
+                            })
+                        }
+                    })
+                } else {
+                    webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                        data.infohash = data.infoHash
+                        delete data.infoHash
+                        for(let prop in data){
+                            torrent[prop] = data[prop]
+                        }
+                        return callback(null, {torrent, data})
+                    })
+                }
             }
         })
     }
