@@ -550,27 +550,58 @@ publish(folder, keypair, sequence, stuff, manage, callback){
     if(!stuff || typeof(stuff) !== 'object' || Array.isArray(stuff)){
         stuff = {}
     }
-    fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
-        if(error){
-            return callback(error)
-        } else {
-            webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
-                webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, manage, (error, data) => {
+    let checkTorrent = this.findTheTorrent(keypair.address)
+    if(checkTorrent){
+        webtorrent.remove(checkTorrent.infoHash, {destroyStore: clean}, error => {
+            if(error){
+                return callback(error)
+            } else {
+                fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
                     if(error){
                         return callback(error)
                     } else {
-                        data.infohash = data.infoHash
-                        delete data.infoHash
-                        for(let prop in data){
-                            torrent[prop] = data[prop]
-                        }
-                        torrent.managed = manage
-                        return callback(null, {torrent, data})
+                        webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
+                            webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, manage, (error, data) => {
+                                if(error){
+                                    return callback(error)
+                                } else {
+                                    data.infohash = data.infoHash
+                                    delete data.infoHash
+                                    for(let prop in data){
+                                        torrent[prop] = data[prop]
+                                    }
+                                    torrent.managed = manage
+                                    return callback(null, {torrent, data})
+                                }
+                            })
+                        })
                     }
                 })
-            })
-        }
-    })
+            }
+        })
+    } else {
+        fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
+            if(error){
+                return callback(error)
+            } else {
+                webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
+                    webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, manage, (error, data) => {
+                        if(error){
+                            return callback(error)
+                        } else {
+                            data.infohash = data.infoHash
+                            delete data.infoHash
+                            for(let prop in data){
+                                torrent[prop] = data[prop]
+                            }
+                            torrent.managed = manage
+                            return callback(null, {torrent, data})
+                        }
+                    })
+                })
+            }
+        })
+    }
 }
 remove(address, manage, callback){
     if(!callback){

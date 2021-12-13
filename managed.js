@@ -448,26 +448,56 @@ class TorrentProperty extends EventEmitter {
         if(!stuff || typeof(stuff) !== 'object' || Array.isArray(stuff)){
             stuff = {}
         }
-        fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
-            if(error){
-                return callback(error)
-            } else {
-                webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
-                    webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, (mainError, data) => {
-                        if(mainError){
-                            return callback(mainError)
+        let checkTorrent = this.findTheTorrent(keypair.address)
+        if(checkTorrent){
+            webtorrent.remove(checkTorrent.infoHash, {destroyStore: clean}, error => {
+                if(error){
+                    return callback(error)
+                } else {
+                    fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
+                        if(error){
+                            return callback(error)
                         } else {
-                            data.infohash = data.infoHash
-                            delete data.infoHash
-                            for(let prop in data){
-                                torrent[prop] = data[prop]
-                            }
-                            return callback(null, {torrent, data})
+                            webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
+                                webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, (mainError, data) => {
+                                    if(mainError){
+                                        return callback(mainError)
+                                    } else {
+                                        data.infohash = data.infoHash
+                                        delete data.infoHash
+                                        for(let prop in data){
+                                            torrent[prop] = data[prop]
+                                        }
+                                        return callback(null, {torrent, data})
+                                    }
+                                })
+                            })
                         }
                     })
-                })
-            }
-        })
+                }
+            })
+        } else {
+            fs.cp(folder, storage + path.sep + keypair.address, {recursive: true, force: true}, error => {
+                if(error){
+                    return callback(error)
+                } else {
+                    webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
+                        webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, (mainError, data) => {
+                            if(mainError){
+                                return callback(mainError)
+                            } else {
+                                data.infohash = data.infoHash
+                                delete data.infoHash
+                                for(let prop in data){
+                                    torrent[prop] = data[prop]
+                                }
+                                return callback(null, {torrent, data})
+                            }
+                        })
+                    })
+                }
+            })
+        }
     }
     remove(address, callback){
         if(!callback){
