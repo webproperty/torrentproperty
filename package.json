@@ -1,6 +1,6 @@
 {
   "name": "torrentproperty",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "fs-extra": "^10.0.0",
-    "webproperty": "^1.4.5",
+    "webproperty": "^1.4.6",
     "webtorrent": "^1.5.8"
   }
 }
