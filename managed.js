@@ -19,7 +19,7 @@ function mainHandle(self){
                     if(error){
                         self.emit('error', error)
                     } else {
-                        self.emit('removed', tempTorrent.address)
+                        self.emit('removed', data.prevInfoHash)
                     }
                 })
             } else {
@@ -64,7 +64,7 @@ function mainHandle(self){
                     if(error){
                         self.emit('error', error)
                     } else {
-                        self.emit('removed',prevTorrent.address)
+                        self.emit('removed', data.prevInfoHash)
                     }
                 })
             } else {
@@ -110,7 +110,7 @@ function mainHandle(self){
                         if(error){
                             self.emit('error', error)
                         } else {
-                            self.emit('removed',prevTorrent.address)
+                            self.emit('removed', data.prevInfoHash)
                         }
                     })
                 } else {
@@ -157,7 +157,7 @@ function mainHandle(self){
                         if(error){
                             self.emit('error', error)
                         } else {
-                            self.emit('removed', prevTorrent.address)
+                            self.emit('removed', data.prevInfoHash)
                         }
                     })
                 } else {
@@ -204,7 +204,7 @@ function mainHandle(self){
                         if(error){
                             self.emit('error', error)
                         } else {
-                            self.emit('removed', prevTorrent.address)
+                            self.emit('removed', data.prevInfoHash)
                         }
                     })
                 } else {
@@ -217,7 +217,7 @@ function mainHandle(self){
                     if(error){
                         self.emit('error', error)
                     } else {
-                        self.emit('removed', dataTorrent.address)
+                        self.emit('removed', data.infohash)
                     }
                 })
             } else {
