@@ -440,11 +440,13 @@ publish(folder, keypair, sequence, stuff, manage, callback){
                                 } else {
                                     data.infohash = data.infoHash
                                     delete data.infoHash
+                                    const secret = data.secret
+                                    delete data.secret
                                     for(let prop in data){
                                         torrent[prop] = data[prop]
                                     }
                                     torrent.managed = manage
-                                    return callback(null, {torrent, data})
+                                    return callback(null, {torrent, data: {...data, secret}})
                                 }
                             })
                         })
@@ -464,11 +466,13 @@ publish(folder, keypair, sequence, stuff, manage, callback){
                         } else {
                             data.infohash = data.infoHash
                             delete data.infoHash
+                            const secret = data.secret
+                            delete data.secret
                             for(let prop in data){
                                 torrent[prop] = data[prop]
                             }
                             torrent.managed = manage
-                            return callback(null, {torrent, data})
+                            return callback(null, {torrent, data: {...data, secret}})
                         }
                     })
                 })
