@@ -384,14 +384,29 @@ load(address, manage, callback){
         if(error){
             return callback(error)
         } else {
+            data.infohash = data.infoHash
+            delete data.infoHash
             let checkTorrent = this.findTheTorrent(address)
             if(checkTorrent){
-                data.infohash = data.infoHash
-                delete data.infoHash
-                for(let prop in data){
-                    checkTorrent[prop] = data[prop]
+                if(checkTorrent.infoHash === data.infoHash){
+                    for(let prop in data){
+                        checkTorrent[prop] = data[prop]
+                    }
+                    return callback(null, {checkTorrent, data})
+                } else {
+                    this.webtorrent.remove(checkTorrent.infoHash, {destroyStore: true}, checkError => {
+                        if(checkError){
+                            return callback(checkError)
+                        } else {
+                            this.webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
+                                for(let prop in data){
+                                    torrent[prop] = data[prop]
+                                }
+                                return callback(null, {torrent, data})
+                            })
+                        }
+                    })
                 }
-                return callback(null, {torrent: checkTorrent, data})
             } else {
                 this.webtorrent.add(data.infoHash, {path: storage, destroyStoreOnDestroy: clean}, torrent => {
                     data.infohash = data.infoHash
@@ -415,7 +430,13 @@ publish(folder, keypair, sequence, stuff, manage, callback){
     if((!folder || typeof(folder) !== 'string') || (!folder.includes('/') && !folder.includes('\\'))){
         return callback(new Error('must have folder'))
     } else {
-        folder = path.resolve(folder)
+        folder = {folderOld: path.resolve(folder), target: folder.split(path.sep).pop()}
+        if(folder.target.includes('.')){
+            folder.folderNew = storage + path.sep + keypair.address + '.' + folder.target.split('.').pop()
+        } else {
+            folder.folderNew = storage + path.sep + keypair.address
+        }
+        delete folder.target
     }
     if((!keypair) || (!keypair.address || !keypair.secret)){
         keypair = this.webproperty.createKeypair()
@@ -423,62 +444,29 @@ publish(folder, keypair, sequence, stuff, manage, callback){
     if(!stuff || typeof(stuff) !== 'object' || Array.isArray(stuff)){
         stuff = {}
     }
-    let checkTorrent = this.findTheTorrent(keypair.address)
-    if(checkTorrent){
-        this.webtorrent.remove(checkTorrent.infoHash, {destroyStore: clean}, error => {
-            if(error){
-                return callback(error)
-            } else {
-                fs.copy(folder, storage + path.sep + keypair.address, {overwrite: true}, error => {
+    fs.copy(folder.folderOld, folder.folderNew, {overwrite: true}, error => {
+        if(error){
+            return callback(error)
+        } else {
+            this.webtorrent.seed(folder.folderNew, {destroyStoreOnDestroy: clean}, torrent => {
+                this.webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, manage, (error, data) => {
                     if(error){
                         return callback(error)
                     } else {
-                        this.webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
-                            this.webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, manage, (error, data) => {
-                                if(error){
-                                    return callback(error)
-                                } else {
-                                    data.infohash = data.infoHash
-                                    delete data.infoHash
-                                    const secret = data.secret
-                                    delete data.secret
-                                    for(let prop in data){
-                                        torrent[prop] = data[prop]
-                                    }
-                                    torrent.managed = manage
-                                    return callback(null, {torrent, data: {...data, secret}})
-                                }
-                            })
-                        })
+                        data.infohash = data.infoHash
+                        delete data.infoHash
+                        const secret = data.secret
+                        delete data.secret
+                        for(let prop in data){
+                            torrent[prop] = data[prop]
+                        }
+                        torrent.managed = manage
+                        return callback(null, {torrent, data, secret})
                     }
                 })
-            }
-        })
-    } else {
-        fs.copy(folder, storage + path.sep + keypair.address, {overwrite: true}, error => {
-            if(error){
-                return callback(error)
-            } else {
-                this.webtorrent.seed(storage + path.sep + keypair.address, {destroyStoreOnDestroy: clean}, torrent => {
-                    this.webproperty.publish(keypair, {ih: torrent.infoHash, ...stuff}, sequence, manage, (error, data) => {
-                        if(error){
-                            return callback(error)
-                        } else {
-                            data.infohash = data.infoHash
-                            delete data.infoHash
-                            const secret = data.secret
-                            delete data.secret
-                            for(let prop in data){
-                                torrent[prop] = data[prop]
-                            }
-                            torrent.managed = manage
-                            return callback(null, {torrent, data: {...data, secret}})
-                        }
-                    })
-                })
-            }
-        })
-    }
+            })
+        }
+    })
 }
 remove(address, manage, callback){
     if(!callback){
